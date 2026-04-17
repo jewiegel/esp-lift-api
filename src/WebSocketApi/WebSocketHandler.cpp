@@ -1,4 +1,5 @@
-#include <WebSocketApi/WebSocketHandler.h>
+#include "WebSocketHandler.h"
+#include "Commands/RequestLiftHandler.h"
 
 WebSocketHandler::WebSocketHandler()
 {
