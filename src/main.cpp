@@ -6,7 +6,8 @@ WebSocketHandler webSocketHandler;
 RequestLiftHandler requestLiftHandler;
 
 
-void setup() {
+void setup() 
+{
   Serial.begin(9600);
   Serial.println("Hello, World!");
 
@@ -16,6 +17,7 @@ void setup() {
   requestLiftHandler.execute(command);
 }
 
-void loop() {
+void loop() 
+{
   webSocketHandler.update();
 }

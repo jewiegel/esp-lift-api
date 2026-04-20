@@ -42,14 +42,20 @@ void WebSocketHandler::onEvent(AsyncWebSocket *server, AsyncWebSocketClient *cli
     } else if (type == WS_EVT_DISCONNECT) {
         Serial.println("WebSocket client disconnected");
     } else if (type == WS_EVT_DATA) {
-        Serial.printf("Received data: %.*s\n", len, data);
-        sendData("Message received: %.*s\n", len, data);
+        JsonDocument doc;
+        DeserializationError error = deserializeJson(doc, data, len);
+        if (error) {
+            Serial.println("Failed to parse JSON");
+            return;
+        }
+        const char* command = doc["command"];
+        Serial.println("Received command: " + String(command));
     }
 }
 
 void WebSocketHandler::sendData(const char* format, ...)
 {
-    char buffer[256]; // Zorg dat deze groot genoeg is
+    char buffer[256];
     va_list args;
     va_start(args, format);
     vsnprintf(buffer, sizeof(buffer), format, args);
@@ -62,7 +68,6 @@ void WebSocketHandler::update()
 {
     webSocket->cleanupClients();
 
-    // Voorbeeld: Stuur elke 5 sec data naar alle clients
     static unsigned long lastTime = 0;
     if (millis() - lastTime > 5000) {
         lastTime = millis();
