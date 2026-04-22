@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <WebSocketApi/WebSocketHandler.h>
 #include <WebSocketApi/Commands/RequestLiftHandler.h>
+#include "WebSocketApi/CommandRegistry.h"
 
 WebSocketHandler webSocketHandler;
 RequestLiftHandler requestLiftHandler;
@@ -14,7 +15,10 @@ void setup()
   webSocketHandler.begin();
 
   RequestLiftCommand command(5);
-  requestLiftHandler.execute(command);
+
+  // Call the command registry to convert a command name to a handler
+  ILiftCommandHandler* handler = CommandRegistry::convertHandler("api/v1/lift/RequestLiftCommand");
+  handler->execute(command);
 }
 
 void loop() 
