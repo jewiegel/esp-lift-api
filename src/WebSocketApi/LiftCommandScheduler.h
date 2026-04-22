@@ -1,13 +1,14 @@
 #pragma once
 
 #include "Commands/ICommand.h"
+#include <queue>
 
 class LiftCommandScheduler
 {
 private:
-    /* data */
+    std::queue<ICommand> commandQueue;
 public:
-    LiftCommandScheduler(/* args */);
+    LiftCommandScheduler();
     ~LiftCommandScheduler();
     void enqueue(const ICommand &command);
 };
