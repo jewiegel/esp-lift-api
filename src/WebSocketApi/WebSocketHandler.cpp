@@ -52,12 +52,7 @@ void WebSocketHandler::onEvent(AsyncWebSocket *server, AsyncWebSocketClient *cli
         ICommand* command = CommandFactory::createCommand(doc);
         if (!command) { Serial.println("Unknown command"); return; }
 
-        ILiftCommandHandler* handler = CommandRegistry::convertHandler(command->getName());
-        if (handler) {
-            handler->execute(*command);
-        } else {
-            Serial.println("No handler found for command: " + command->getName());
-        }
+        scheduler->enqueue(command);
     }
 }
 
