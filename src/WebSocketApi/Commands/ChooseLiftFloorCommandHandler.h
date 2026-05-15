@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ILiftCommandHandler.h"
 #include "ChooseLiftFloorCommand.h"
 

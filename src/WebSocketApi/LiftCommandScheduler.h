@@ -6,9 +6,9 @@
 class LiftCommandScheduler
 {
 private:
-    std::queue<ICommand> commandQueue;
+    std::queue<ICommand*> commandQueue;
 public:
     LiftCommandScheduler();
     ~LiftCommandScheduler();
-    void enqueue(const ICommand &command);
+    void enqueue(ICommand* command);
 };

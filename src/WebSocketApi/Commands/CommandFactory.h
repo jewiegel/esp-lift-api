@@ -12,7 +12,6 @@ class CommandFactory
 private:
     static std::map<String, ICommand* (*)(const JsonDocument &)> commandMap;
 public:
-
-public:
     static ICommand* createCommand(const JsonDocument &doc);
+    static constexpr const char* apiVersion = "api/v1/lift/";
 };

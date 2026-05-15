@@ -1,0 +1,7 @@
+{
+    "command": "api/v1/lift/RequestLiftCommand",
+    "data": 
+    {
+        "desiredFloor": 1
+    }
+}

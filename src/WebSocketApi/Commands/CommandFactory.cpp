@@ -1,11 +1,11 @@
 #include "CommandFactory.h"
 
 std::map<String, ICommand* (*)(const JsonDocument &)> CommandFactory::commandMap = {
-    {"RequestLiftCommand", [](const JsonDocument &doc) -> ICommand* {
+    {String(apiVersion) + "RequestLiftCommand", [](const JsonDocument &doc) -> ICommand* {
         int floor = doc["floor"];
         return new RequestLiftCommand(floor);
     }},
-    {"ChooseLiftFloorCommand", [](const JsonDocument &doc) -> ICommand* {
+    {String(apiVersion) + "ChooseLiftFloorCommand", [](const JsonDocument &doc) -> ICommand* {
         int floor = doc["floor"];
         return new ChooseLiftFloorCommand(floor);
     }}
@@ -13,7 +13,7 @@ std::map<String, ICommand* (*)(const JsonDocument &)> CommandFactory::commandMap
 
 ICommand* CommandFactory::createCommand(const JsonDocument &doc)
 {
-    String commandName = doc["command"];
+    String commandName = doc["command"].as<const char*>();
     if (commandMap.find(commandName) != commandMap.end()) {
         return commandMap[commandName](doc);
     }

@@ -8,7 +8,7 @@ LiftCommandScheduler::~LiftCommandScheduler()
 {
 }
 
-void LiftCommandScheduler::enqueue(const ICommand &command)
+void LiftCommandScheduler::enqueue(ICommand* command)
 {
-    // Add command to the queue
+    commandQueue.push(command);
 }

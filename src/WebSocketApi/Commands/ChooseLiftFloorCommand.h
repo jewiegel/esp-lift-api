@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ICommand.h"
 
 class ChooseLiftFloorCommand : public ICommand

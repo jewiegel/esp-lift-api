@@ -1,9 +1,9 @@
 #include "WebSocketHandler.h"
-#include "Commands/RequestLiftHandler.h"
 
-WebSocketHandler::WebSocketHandler()
+WebSocketHandler::WebSocketHandler(LiftCommandScheduler *scheduler)
 {
     this->port = 80;
+    this->scheduler = scheduler;
     webServer = new AsyncWebServer(port);
     webSocket = new AsyncWebSocket("/ws");
 }
@@ -48,8 +48,16 @@ void WebSocketHandler::onEvent(AsyncWebSocket *server, AsyncWebSocketClient *cli
             Serial.println("Failed to parse JSON");
             return;
         }
-        const char* command = doc["command"];
-        Serial.println("Received command: " + String(command));
+        
+        ICommand* command = CommandFactory::createCommand(doc);
+        if (!command) { Serial.println("Unknown command"); return; }
+
+        ILiftCommandHandler* handler = CommandRegistry::convertHandler(command->getName());
+        if (handler) {
+            handler->execute(*command);
+        } else {
+            Serial.println("No handler found for command: " + command->getName());
+        }
     }
 }
 

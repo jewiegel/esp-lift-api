@@ -5,16 +5,24 @@
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
 
+#include "Commands/RequestLiftHandler.h"
+#include "Commands/CommandFactory.h"
+#include "CommandRegistry.h"
+#include "LiftCommandScheduler.h"
+
+
 class WebSocketHandler
 {
 private:
+
     AsyncWebServer *webServer;
     AsyncWebSocket *webSocket;
     String wifi_ssd = "FMI ImProvia Guest";
     String wifi_password = "Welcomeguest!";
     int port;
+    LiftCommandScheduler *scheduler;
 public:
-    WebSocketHandler();
+    WebSocketHandler(LiftCommandScheduler *scheduler);
     ~WebSocketHandler();
     void begin();
     void update();
