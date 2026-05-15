@@ -1,23 +1,21 @@
 #include <Arduino.h>
-#include <api.h>
+#include <WebSocketApi/WebSocketHandler.h>
+#include <WebSocketApi/LiftManager.h>
 
-int delayInterval = 750;
-api *apiInstance;
+LiftCommandScheduler scheduler;
+LiftManager liftManager(&scheduler);
+WebSocketHandler webSocketHandler(&scheduler);
 
-const char* wifi_ssd = "FMI ImProvia Guest";
-const char* wifi_password = "Welcomeguest!";
 
-void setup() {
+void setup()
+{
   Serial.begin(9600);
-  Serial.println("Hello, World!");
 
-  pinMode(37, OUTPUT);
-  pinMode(38, OUTPUT);
-  pinMode(39, OUTPUT);
-  apiInstance = new api(wifi_ssd, wifi_password);
-  apiInstance->connectToWiFi();
+  webSocketHandler.begin();
 }
 
-void loop() {
-  apiInstance->server->handleClient();
+void loop()
+{
+  webSocketHandler.update();
+  liftManager.update();
 }
