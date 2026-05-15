@@ -10,7 +10,6 @@ WebSocketHandler webSocketHandler(&scheduler);
 void setup()
 {
   Serial.begin(9600);
-  Serial.println("Hello, World!");
 
   webSocketHandler.begin();
 }

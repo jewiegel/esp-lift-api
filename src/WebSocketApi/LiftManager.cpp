@@ -25,5 +25,5 @@ void LiftManager::commandCompleted()
 
 void LiftManager::clearCommands()
 {
-    // Clear all commands from the scheduler
+    scheduler->clearCommands();
 }
