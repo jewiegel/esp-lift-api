@@ -32,13 +32,13 @@ void WebSocketHandler::begin()
 
 void WebSocketHandler::handleClient()
 {
-    // Handle incoming WebSocket clients
+    Serial.println("WebSocket client connected");
 }
 
 void WebSocketHandler::onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
 {
     if (type == WS_EVT_CONNECT) {
-        Serial.println("WebSocket client connected");
+        handleClient();
     } else if (type == WS_EVT_DISCONNECT) {
         Serial.println("WebSocket client disconnected");
     } else if (type == WS_EVT_DATA) {
@@ -56,15 +56,11 @@ void WebSocketHandler::onEvent(AsyncWebSocket *server, AsyncWebSocketClient *cli
     }
 }
 
-void WebSocketHandler::sendData(const char* format, ...)
+void WebSocketHandler::sendData(const JsonDocument& doc)
 {
-    char buffer[256];
-    va_list args;
-    va_start(args, format);
-    vsnprintf(buffer, sizeof(buffer), format, args);
-    va_end(args);
-
-    webSocket->textAll(buffer);
+    String output;
+    serializeJson(doc, output);
+    webSocket->textAll(output);
 }
 
 void WebSocketHandler::update()
@@ -74,7 +70,8 @@ void WebSocketHandler::update()
     static unsigned long lastTime = 0;
     if (millis() - lastTime > 5000) {
         lastTime = millis();
-        String uptime = "Uptime: " + String(millis() / 1000) + "s";
-        webSocket->textAll(uptime);
+        JsonDocument doc;
+        doc["uptime"] = millis() / 1000;
+        sendData(doc);
     }
 }
