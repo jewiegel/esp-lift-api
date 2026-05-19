@@ -3,7 +3,8 @@
 ButtonDriver::ButtonDriver(int pin) : pin(pin)
 {
     pinMode(pin, INPUT_PULLUP);
-    lastState = digitalRead(pin);
+    lastRawState = digitalRead(pin);
+    confirmedState = lastRawState;
 }
 
 void ButtonDriver::onPress(std::function<void()> callback)
@@ -13,16 +14,16 @@ void ButtonDriver::onPress(std::function<void()> callback)
 
 void ButtonDriver::update()
 {
-    bool currentState = digitalRead(pin);
+    bool reading = digitalRead(pin);
 
-    if (currentState != lastState)
+    if (reading != lastRawState)
         lastDebounceTime = millis();
 
-    if ((millis() - lastDebounceTime) > debounceDelay) {
-        // LOW because INPUT_PULLUP: pin reads LOW when button is pressed
-        if (currentState == LOW && lastState == HIGH && callback)
+    if ((millis() - lastDebounceTime) > debounceDelay && reading != confirmedState) {
+        confirmedState = reading;
+        if (confirmedState == LOW && callback)
             callback();
     }
 
-    lastState = currentState;
+    lastRawState = reading;
 }

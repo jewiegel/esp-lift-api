@@ -6,7 +6,7 @@
 LiftCommandScheduler scheduler;
 LiftManager liftManager(&scheduler);
 WebSocketHandler webSocketHandler(&scheduler);
-ButtonDriver floorButton(9);
+ButtonDriver floorButton(4);
 
 void setup()
 {
