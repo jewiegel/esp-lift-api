@@ -2,8 +2,9 @@
 
 SwitchDriver::SwitchDriver(int pin) : pin(pin)
 {
-    pinMode(pin, INPUT);
-    lastState = digitalRead(pin);
+    pinMode(pin, INPUT_PULLUP);
+    lastRawState = digitalRead(pin);
+    confirmedState = lastRawState;
 }
 
 void SwitchDriver::onTrigger(std::function<void()> callback)
@@ -11,18 +12,23 @@ void SwitchDriver::onTrigger(std::function<void()> callback)
     this->callback = callback;
 }
 
-// IR sensor: LOW = beam broken / object detected
 bool SwitchDriver::isTriggered()
 {
-    return digitalRead(pin) == LOW;
+    return confirmedState == LOW;
 }
 
 void SwitchDriver::update()
 {
-    bool currentState = isTriggered();
+    bool reading = digitalRead(pin);
 
-    if (currentState && !lastState && callback)
-        callback();
+    if (reading != lastRawState)
+        lastDebounceTime = millis();
 
-    lastState = currentState;
+    if ((millis() - lastDebounceTime) > debounceDelay && reading != confirmedState) {
+        confirmedState = reading;
+        if (confirmedState == LOW && callback)
+            callback();
+    }
+
+    lastRawState = reading;
 }
