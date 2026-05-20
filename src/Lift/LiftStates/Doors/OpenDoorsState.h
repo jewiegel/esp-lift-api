@@ -7,6 +7,8 @@ class OpenDoorsState : public ElevatorState
 {
 private:
     LiftController* controller;
+    unsigned long endTime = 0;
+    bool doorsFullyOpen = false;
 public:
     OpenDoorsState(LiftController* controller);
     void onEnter() override;

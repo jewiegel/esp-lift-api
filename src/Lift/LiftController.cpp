@@ -70,9 +70,16 @@ void LiftController::update()
 
 void LiftController::goToFloor(int floor)
 {
-    if (floor == currentFloor || floor < 0 || floor >= FLOOR_COUNT) return;
+    if (floor < 0 || floor >= FLOOR_COUNT) return;
+    if (isMoving || doorsInMotion) return;
 
-    setState(new MovingState(this, floor));
+    pendingFloor = floor;
+
+    if (doorsOpen) {
+        setState(new CloseDoorsState(this));
+    } else {
+        setState(new OpenDoorsState(this));
+    }
 }
 
 void LiftController::openDoors()
@@ -83,7 +90,6 @@ void LiftController::openDoors()
 void LiftController::closeDoors()
 {
     setState(new CloseDoorsState(this));
-    setState(new IdleState(this));
 }
 
 void LiftController::setState(ElevatorState* newState)
@@ -98,6 +104,7 @@ void LiftController::setState(ElevatorState* newState)
 
 void LiftController::setDoorStatus(DoorStatus status)
 {
+    doorsOpen = (status == DoorStatus::Open);
     doorStatusLeds[0]->off();
     doorStatusLeds[1]->off();
     doorStatusLeds[2]->off();

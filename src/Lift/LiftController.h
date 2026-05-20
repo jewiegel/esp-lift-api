@@ -16,6 +16,10 @@ class LiftController
 {
 private:
     int currentFloor = 0;
+    int pendingFloor = -1;
+    bool doorsOpen = false;
+    bool doorsInMotion = false;
+    bool isMoving = false;
     ElevatorState* currentState = nullptr;
 
     ILedDriver*    floorLeds[FLOOR_COUNT];
@@ -35,6 +39,10 @@ public:
     void setState(ElevatorState* newState);
     void setDoorStatus(DoorStatus status);
     void turnOnFloorLed(int floor);
+    void setIsMoving(bool moving) { isMoving = moving; }
+    void setDoorsInMotion(bool inMotion) { doorsInMotion = inMotion; }
+    void setPendingFloor(int floor) { pendingFloor = floor; }
+    int getPendingFloor() const { return pendingFloor; }
     ISwitchDriver* getFloorSwitch(int floor) { return floorSwitches[floor]; }
     int getCurrentFloor() const { return currentFloor; }
 };

@@ -1,4 +1,5 @@
 #include "OpenDoorsState.h"
+#include "CloseDoorsState.h"
 
 OpenDoorsState::OpenDoorsState(LiftController* controller) : controller(controller)
 {
@@ -6,8 +7,11 @@ OpenDoorsState::OpenDoorsState(LiftController* controller) : controller(controll
 
 void OpenDoorsState::onEnter()
 {
-    Serial.println("[State] Doors open");
-    controller->setDoorStatus(DoorStatus::Open);
+    doorsFullyOpen = false;
+    controller->setDoorsInMotion(true);
+    Serial.println("[State] Doors opening");
+    controller->setDoorStatus(DoorStatus::Moving);
+    endTime = millis() + 3000;
 }
 
 void OpenDoorsState::onExit()
@@ -17,5 +21,17 @@ void OpenDoorsState::onExit()
 
 ElevatorState* OpenDoorsState::update()
 {
-    return nullptr;   
+    if (endTime != 0 && millis() >= endTime) {
+        endTime = 0;
+        if (!doorsFullyOpen) {
+            doorsFullyOpen = true;
+            controller->setDoorsInMotion(false);
+            Serial.println("[State] Doors open");
+            controller->setDoorStatus(DoorStatus::Open);
+            endTime = millis() + 3000;
+        } else {
+            return new CloseDoorsState(controller);
+        }
+    }
+    return nullptr;
 }

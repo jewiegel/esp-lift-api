@@ -7,6 +7,7 @@ class CloseDoorsState : public ElevatorState
 {
 private:
     LiftController* controller;
+    unsigned long endTime = 0;
 public:
     CloseDoorsState(LiftController* controller);
     void onEnter() override;

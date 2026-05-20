@@ -11,12 +11,14 @@ void MovingState::onEnter()
     int direction = (targetFloor > currentStepFloor) ? 1 : -1;
     nextFloor = currentStepFloor + direction;
     lastSwitchState = false;
+    controller->setIsMoving(true);
     Serial.println("[State] Moving to floor: " + String(targetFloor));
-    controller->setDoorStatus(DoorStatus::Moving);
+    controller->setDoorStatus(DoorStatus::Closed);
 }
 
 void MovingState::onExit()
 {
+    controller->setIsMoving(false);
     Serial.println("Exiting Moving state");
 }
 
