@@ -9,9 +9,9 @@ constexpr int PIN_FLOOR_LED_2 = 11;
 constexpr int PIN_FLOOR_LED_3 = 12;
 
 // Door status LEDs
-constexpr int PIN_DOOR_LED_OPEN   = 16;
-constexpr int PIN_DOOR_LED_CLOSED = 17;
-constexpr int PIN_DOOR_LED_MOVING = 18;
+constexpr int PIN_DOOR_LED_OPEN   = 17;
+constexpr int PIN_DOOR_LED_CLOSED = 18;
+constexpr int PIN_DOOR_LED_MOVING = 8;
 
 // Floor buttons (inside lift)
 constexpr int PIN_FLOOR_BTN_0 = 5;

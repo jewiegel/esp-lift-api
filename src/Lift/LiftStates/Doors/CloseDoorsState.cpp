@@ -14,3 +14,8 @@ void CloseDoorsState::onExit()
 {
     Serial.println("Exiting Close Doors state");
 }
+
+ElevatorState* CloseDoorsState::update()
+{
+    return nullptr;
+}

@@ -54,6 +54,11 @@ void LiftController::update()
 {
     for (int i = 0; i < FLOOR_COUNT; i++) floorButtons[i]->update();
     callButton->update();
+
+    if (currentState) {
+        ElevatorState* next = currentState->update();
+        if (next) setState(next);
+    }
 }
 
 void LiftController::goToFloor(int floor)
@@ -61,7 +66,6 @@ void LiftController::goToFloor(int floor)
     if (floor == currentFloor || floor < 0 || floor >= FLOOR_COUNT) return;
 
     setState(new MovingState(this, floor));
-    setState(new OpenDoorsState(this));
 }
 
 void LiftController::openDoors()
@@ -94,5 +98,14 @@ void LiftController::setDoorStatus(DoorStatus status)
         case DoorStatus::Open:   doorStatusLeds[0]->on(); break;
         case DoorStatus::Closed: doorStatusLeds[1]->on(); break;
         case DoorStatus::Moving: doorStatusLeds[2]->on(); break;
+    }
+}
+
+void LiftController::turnOnFloorLed(int floor)
+{
+    for (int i = 0; i < FLOOR_COUNT; i++) floorLeds[i]->off();
+    if (floor >= 0 && floor < FLOOR_COUNT) {
+        floorLeds[floor]->on();
+        currentFloor = floor;
     }
 }

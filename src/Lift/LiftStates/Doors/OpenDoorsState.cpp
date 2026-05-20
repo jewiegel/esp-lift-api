@@ -14,3 +14,8 @@ void OpenDoorsState::onExit()
 {
     Serial.println("Exiting Open Doors state");
 }
+
+ElevatorState* OpenDoorsState::update()
+{
+    return nullptr;   
+}

@@ -30,5 +30,6 @@ public:
     void closeDoors();
     void setState(ElevatorState* newState);
     void setDoorStatus(DoorStatus status);
+    void turnOnFloorLed(int floor);
     int getCurrentFloor() const { return currentFloor; }
 };

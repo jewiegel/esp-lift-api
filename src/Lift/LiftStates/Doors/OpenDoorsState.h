@@ -11,4 +11,5 @@ public:
     OpenDoorsState(LiftController* controller);
     void onEnter() override;
     void onExit() override;
+    ElevatorState* update() override;
 };

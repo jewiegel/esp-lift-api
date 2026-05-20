@@ -14,3 +14,8 @@ void IdleState::onExit()
 {
     Serial.println("Exiting Idle state");
 }
+
+ElevatorState* IdleState::update()
+{
+    return nullptr;
+}
