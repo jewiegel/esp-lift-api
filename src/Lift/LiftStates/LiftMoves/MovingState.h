@@ -9,7 +9,8 @@ private:
     LiftController* controller;
     int targetFloor;
     int currentStepFloor;
-    unsigned long nextStepTime = 0;
+    int nextFloor;
+    bool lastSwitchState = false;
 public:
     MovingState(LiftController* controller, int targetFloor);
     void onEnter() override;

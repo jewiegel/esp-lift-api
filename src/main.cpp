@@ -9,7 +9,6 @@ LiftCommandScheduler scheduler;
 WebSocketHandler webSocketHandler(&scheduler);
 
 LiftController liftController;
-IButtonDriver* switchDriver = new ButtonDriver(19);
 
 void setup()
 {
@@ -17,10 +16,6 @@ void setup()
 
   webSocketHandler.begin();
   liftController.setup();
-
-  switchDriver->onPress([]() {
-    Serial.println("Switch triggered! Enqueuing lift command to floor 2.");
-  });
 }
 
 void loop()
@@ -28,5 +23,4 @@ void loop()
   webSocketHandler.update();
   //liftManager.update();
   liftController.update();
-  switchDriver->update();
 }

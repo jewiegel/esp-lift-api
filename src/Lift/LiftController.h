@@ -5,6 +5,9 @@
 #include "Hardware/Button/IButtonDriver.h"
 #include "Hardware/Led/LedDriver.h"
 #include "Hardware/Led/ILedDriver.h"
+#include "Hardware/Switch/SwitchDriver.h"
+#include "Hardware/Switch/ISwitchDriver.h"
+
 #include "LiftStates/IElevatorState.h"
 
 enum class DoorStatus { Open, Closed, Moving };
@@ -15,9 +18,10 @@ private:
     int currentFloor = 0;
     ElevatorState* currentState = nullptr;
 
-    ILedDriver*    floorLeds[4];
+    ILedDriver*    floorLeds[FLOOR_COUNT];
     ILedDriver*    doorStatusLeds[3];
-    IButtonDriver* floorButtons[4];
+    IButtonDriver* floorButtons[FLOOR_COUNT];
+    ISwitchDriver* floorSwitches[FLOOR_COUNT];
     IButtonDriver* callButton;
 
 public:
@@ -31,5 +35,6 @@ public:
     void setState(ElevatorState* newState);
     void setDoorStatus(DoorStatus status);
     void turnOnFloorLed(int floor);
+    ISwitchDriver* getFloorSwitch(int floor) { return floorSwitches[floor]; }
     int getCurrentFloor() const { return currentFloor; }
 };

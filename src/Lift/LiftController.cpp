@@ -38,6 +38,12 @@ void LiftController::setup()
     floorButtons[2] = new ButtonDriver(PIN_FLOOR_BTN_2);
     floorButtons[3] = new ButtonDriver(PIN_FLOOR_BTN_3);
 
+    // Initialize floor switches
+    floorSwitches[0] = new SwitchDriver(PIN_FLOOR_SWITCH_0);
+    floorSwitches[1] = new SwitchDriver(PIN_FLOOR_SWITCH_1);
+    floorSwitches[2] = new SwitchDriver(PIN_FLOOR_SWITCH_2);
+    floorSwitches[3] = new SwitchDriver(PIN_FLOOR_SWITCH_3);
+
     for (int i = 0; i < FLOOR_COUNT; i++) {
         floorButtons[i]->onPress([this, i]() { goToFloor(i); });
     }
@@ -53,6 +59,7 @@ void LiftController::setup()
 void LiftController::update()
 {
     for (int i = 0; i < FLOOR_COUNT; i++) floorButtons[i]->update();
+    for (int i = 0; i < FLOOR_COUNT; i++) floorSwitches[i]->update();
     callButton->update();
 
     if (currentState) {

@@ -19,5 +19,11 @@ constexpr int PIN_FLOOR_BTN_1 = 4;
 constexpr int PIN_FLOOR_BTN_2 = 7;
 constexpr int PIN_FLOOR_BTN_3 = 15;
 
+// Floor switches (detecting lift at floor)
+constexpr int PIN_FLOOR_SWITCH_0 = 19;
+constexpr int PIN_FLOOR_SWITCH_1 = 20;
+constexpr int PIN_FLOOR_SWITCH_2 = 21;
+constexpr int PIN_FLOOR_SWITCH_3 = 47;
+
 // Call button
 constexpr int PIN_CALL_BTN = 6;

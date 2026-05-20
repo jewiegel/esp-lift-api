@@ -8,7 +8,9 @@ MovingState::MovingState(LiftController* controller, int targetFloor) : controll
 void MovingState::onEnter()
 {
     currentStepFloor = controller->getCurrentFloor();
-    nextStepTime = millis() + 4000;
+    int direction = (targetFloor > currentStepFloor) ? 1 : -1;
+    nextFloor = currentStepFloor + direction;
+    lastSwitchState = false;
     Serial.println("[State] Moving to floor: " + String(targetFloor));
     controller->setDoorStatus(DoorStatus::Moving);
 }
@@ -20,18 +22,21 @@ void MovingState::onExit()
 
 ElevatorState* MovingState::update()
 {
-    if (millis() < nextStepTime) return nullptr;
+    bool triggered = controller->getFloorSwitch(nextFloor)->isTriggered();
 
-    int step = (targetFloor > currentStepFloor) ? 1 : -1;
-    currentStepFloor += step;
-    controller->turnOnFloorLed(currentStepFloor);
+    if (triggered && !lastSwitchState) {
+        currentStepFloor = nextFloor;
+        controller->turnOnFloorLed(currentStepFloor);
+        Serial.println("[State] Arrived at floor: " + String(currentStepFloor));
 
-    Serial.println("[State] Passing floor: " + String(currentStepFloor));
+        if (currentStepFloor == targetFloor) {
+            return new OpenDoorsState(controller);
+        }
 
-    if (currentStepFloor == targetFloor) {
-        return new OpenDoorsState(controller);
+        int direction = (targetFloor > currentStepFloor) ? 1 : -1;
+        nextFloor = currentStepFloor + direction;
     }
 
-    nextStepTime = millis() + 4000;
+    lastSwitchState = triggered;
     return nullptr;
 }
