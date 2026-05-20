@@ -1,10 +1,14 @@
 #pragma once
 
 #include "../IElevatorState.h"
+#include "../../LiftController.h"
 
 class CloseDoorsState : public ElevatorState
 {
-    public:
-        void onEnter() override;
-        void onExit() override;
+private:
+    LiftController* controller;
+public:
+    CloseDoorsState(LiftController* controller);
+    void onEnter() override;
+    void onExit() override;
 };

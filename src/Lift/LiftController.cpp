@@ -1,4 +1,8 @@
 #include "LiftController.h"
+#include "LiftStates/Doors/OpenDoorsState.h"
+#include "LiftStates/Doors/CloseDoorsState.h"
+#include "LiftStates/LiftMoves/IdleState.h"
+#include "LiftStates/LiftMoves/MovingState.h"
 
 LiftController::LiftController()
 {
@@ -6,6 +10,13 @@ LiftController::LiftController()
 
 LiftController::~LiftController()
 {
+    delete currentState;
+    for (int i = 0; i < FLOOR_COUNT; i++) {
+        delete floorLeds[i];
+        delete floorButtons[i];
+    }
+    for (int i = 0; i < 3; i++) delete doorStatusLeds[i];
+    delete callButton;
 }
 
 void LiftController::setup()
@@ -34,8 +45,9 @@ void LiftController::setup()
     // Initialize call button
     callButton = new ButtonDriver(PIN_CALL_BTN);
 
-    // Set initial state
-    goToFloor(0);
+    // Turn on floor 0 LED and enter initial idle state
+    floorLeds[currentFloor]->on();
+    setState(new IdleState(this));
 }
 
 void LiftController::update()
@@ -46,21 +58,41 @@ void LiftController::update()
 
 void LiftController::goToFloor(int floor)
 {
-    if (floor == currentFloor || floor < 0 || floor > FLOOR_COUNT) return;
+    if (floor == currentFloor || floor < 0 || floor >= FLOOR_COUNT) return;
 
-    floorLeds[currentFloor]->off();
-    currentFloor = floor;
-    floorLeds[currentFloor]->on();
-
-    Serial.println("Going to floor: " + String(currentFloor));
+    setState(new MovingState(this, floor));
+    setState(new OpenDoorsState(this));
 }
 
 void LiftController::openDoors()
 {
-    // Logic to open the lift doors
+    setState(new OpenDoorsState(this));
 }
 
 void LiftController::closeDoors()
 {
-    // Logic to close the lift doors
+    setState(new CloseDoorsState(this));
+    setState(new IdleState(this));
+}
+
+void LiftController::setState(ElevatorState* newState)
+{
+    if (currentState) {
+        currentState->onExit();
+        delete currentState;
+    }
+    currentState = newState;
+    if (currentState) currentState->onEnter();
+}
+
+void LiftController::setDoorStatus(DoorStatus status)
+{
+    doorStatusLeds[0]->off();
+    doorStatusLeds[1]->off();
+    doorStatusLeds[2]->off();
+    switch (status) {
+        case DoorStatus::Open:   doorStatusLeds[0]->on(); break;
+        case DoorStatus::Closed: doorStatusLeds[1]->on(); break;
+        case DoorStatus::Moving: doorStatusLeds[2]->on(); break;
+    }
 }
