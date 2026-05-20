@@ -2,22 +2,20 @@
 
 #include "WebSocketHandler.h"
 #include "LiftCommandScheduler.h"
+#include "Lift/LiftController.h"
 #include <ArduinoJson.h>
-#include "Hardware/Button/ButtonDriver.h"
-#include "Hardware/Led/ILedDriver.h"
 
 class LiftManager
 {
 private:
     LiftCommandScheduler *scheduler;
     WebSocketHandler *webSocketHandler;
-    ButtonDriver *floorButton;
-    ILedDriver **floorLeds;
+    LiftController *liftController;
     int ledCount;
     int currentLedIndex = 0;
     void onFloorButtonPress();
 public:
-    LiftManager(LiftCommandScheduler *scheduler, WebSocketHandler *webSocketHandler, ButtonDriver *floorButton, ILedDriver **floorLeds, int ledCount);
+    LiftManager(LiftCommandScheduler *scheduler, WebSocketHandler *webSocketHandler, LiftController *liftController);
     ~LiftManager();
     void enqueueCommand(ICommand* command);
     void update();

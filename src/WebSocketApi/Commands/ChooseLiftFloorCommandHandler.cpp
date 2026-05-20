@@ -1,6 +1,6 @@
 #include "ChooseLiftFloorCommandHandler.h"
 
-ChooseLiftFloorCommandHandler::ChooseLiftFloorCommandHandler()
+ChooseLiftFloorCommandHandler::ChooseLiftFloorCommandHandler(LiftController *controller) : controller(controller)
 {
 }
 
