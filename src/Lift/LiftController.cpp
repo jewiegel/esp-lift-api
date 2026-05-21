@@ -3,8 +3,11 @@
 #include "LiftStates/Doors/CloseDoorsState.h"
 #include "LiftStates/LiftMoves/IdleState.h"
 #include "LiftStates/LiftMoves/MovingState.h"
+#include "../WebSocketApi/LiftCommandScheduler.h"
+#include "../WebSocketApi/Commands/ChooseLiftFloorCommand.h"
+#include "../WebSocketApi/Commands/RequestLiftCommand.h"
 
-LiftController::LiftController()
+LiftController::LiftController(LiftCommandScheduler* scheduler) : scheduler(scheduler)
 {
 }
 
@@ -45,13 +48,14 @@ void LiftController::setup()
     floorSwitches[2] = new SwitchDriver(PIN_FLOOR_SWITCH_2);
     floorSwitches[3] = new SwitchDriver(PIN_FLOOR_SWITCH_3);
 
-    for (int i = 0; i < FLOOR_COUNT; i++) 
+    for (int i = 0; i < FLOOR_COUNT; i++)
     {
-        floorButtons[i]->onPress([this, i]() { goToFloor(i); });
+        floorButtons[i]->onPress([this, i]() { scheduler->enqueue(new ChooseLiftFloorCommand(i)); });
     }
 
     // Initialize call button
     callButton = new ButtonDriver(PIN_CALL_BTN);
+    callButton->onPress([this]() { scheduler->enqueue(new RequestLiftCommand(currentFloor)); });
 
     // Turn on floor 0 LED and enter initial idle state
     floorLeds[currentFloor]->on();

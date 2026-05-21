@@ -6,7 +6,7 @@
 
 LiftCommandScheduler scheduler;
 WebSocketHandler webSocketHandler(&scheduler);
-LiftController liftController;
+LiftController liftController(&scheduler);
 LiftManager liftManager(&scheduler, &webSocketHandler, &liftController);
 
 void setup()
