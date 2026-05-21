@@ -66,12 +66,4 @@ void WebSocketHandler::sendData(const JsonDocument& doc)
 void WebSocketHandler::update()
 {
     webSocket->cleanupClients();
-
-    static unsigned long lastTime = 0;
-    if (millis() - lastTime > 5000) {
-        lastTime = millis();
-        JsonDocument doc;
-        doc["uptime"] = millis() / 1000;
-        sendData(doc);
-    }
 }

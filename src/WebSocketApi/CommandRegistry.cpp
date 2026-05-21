@@ -1,14 +1,20 @@
 #include "CommandRegistry.h"
+#include "WebSocketHandler.h"
 
-RequestLiftHandler CommandRegistry::requestLiftHandler;
-ChooseLiftFloorCommandHandler CommandRegistry::chooseLiftFloorHandler;
+RequestLiftHandler* CommandRegistry::requestLiftHandler = nullptr;
+ChooseLiftFloorCommandHandler* CommandRegistry::chooseLiftFloorHandler = nullptr;
+std::map<String, ILiftCommandHandler*> CommandRegistry::handlerMap;
 
-std::map<String, ILiftCommandHandler*> CommandRegistry::handlerMap = {
-    {"RequestLift",    &requestLiftHandler},
-    {"ChooseLiftFloor", &chooseLiftFloorHandler}
-};
+void CommandRegistry::init(LiftController* controller, WebSocketHandler* wsHandler)
+{
+    requestLiftHandler = new RequestLiftHandler(controller, wsHandler);
+    chooseLiftFloorHandler = new ChooseLiftFloorCommandHandler(controller, wsHandler);
 
-ILiftCommandHandler* CommandRegistry::convertHandler(const String &commandName)
+    handlerMap["RequestLift"]     = requestLiftHandler;
+    handlerMap["ChooseLiftFloor"] = chooseLiftFloorHandler;
+}
+
+ILiftCommandHandler* CommandRegistry::convertHandler(const String& commandName)
 {
     auto it = handlerMap.find(commandName);
     return it != handlerMap.end() ? it->second : nullptr;

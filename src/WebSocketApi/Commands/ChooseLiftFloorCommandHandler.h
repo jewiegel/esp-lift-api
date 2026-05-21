@@ -4,16 +4,19 @@
 #include "ChooseLiftFloorCommand.h"
 #include "Lift/LiftController.h"
 
+class WebSocketHandler;
+
 class ChooseLiftFloorCommandHandler : public ILiftCommandHandler
 {
 private:
+    LiftController* controller;
+    WebSocketHandler* wsHandler;
     std::function<void()> onCompleted;
-    unsigned long endTime = 0;
-    LiftController *controller;
+    int targetFloor = -1;
 public:
-    ChooseLiftFloorCommandHandler(LiftController *controller);
+    ChooseLiftFloorCommandHandler(LiftController* controller, WebSocketHandler* wsHandler);
     ~ChooseLiftFloorCommandHandler();
 
-    void execute(const ICommand &command, std::function<void()> onCompleted) override;
+    void execute(const ICommand& command, std::function<void()> onCompleted) override;
     void update() override;
 };

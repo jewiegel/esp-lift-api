@@ -5,7 +5,6 @@
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
 
-#include "Commands/RequestLiftHandler.h"
 #include "Commands/CommandFactory.h"
 #include "CommandRegistry.h"
 #include "LiftCommandScheduler.h"

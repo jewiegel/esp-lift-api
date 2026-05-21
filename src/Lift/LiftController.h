@@ -45,4 +45,5 @@ public:
     int getPendingFloor() const { return pendingFloor; }
     ISwitchDriver* getFloorSwitch(int floor) { return floorSwitches[floor]; }
     int getCurrentFloor() const { return currentFloor; }
+    bool areDoorsOpen() const { return doorsOpen; }
 };
