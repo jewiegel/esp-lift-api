@@ -21,7 +21,8 @@ void ChooseLiftFloorCommandHandler::execute(const ICommand& command, std::functi
 
 void ChooseLiftFloorCommandHandler::update()
 {
-    if (controller->getCurrentFloor() == targetFloor && controller->areDoorsOpen()) {
+    if (controller->getCurrentFloor() == targetFloor && controller->areDoorsOpen()) 
+    {
         JsonDocument doc;
         doc["event"] = "floorReached";
         doc["floor"] = targetFloor;

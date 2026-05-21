@@ -21,7 +21,8 @@ void RequestLiftHandler::execute(const ICommand& command, std::function<void()> 
 
 void RequestLiftHandler::update()
 {
-    if (controller->getCurrentFloor() == targetFloor && controller->areDoorsOpen()) {
+    if (controller->getCurrentFloor() == targetFloor && controller->areDoorsOpen()) 
+    {
         JsonDocument doc;
         doc["event"] = "liftArrived";
         doc["floor"] = targetFloor;

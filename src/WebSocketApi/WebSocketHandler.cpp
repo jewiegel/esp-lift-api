@@ -37,14 +37,20 @@ void WebSocketHandler::handleClient()
 
 void WebSocketHandler::onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
 {
-    if (type == WS_EVT_CONNECT) {
+    if (type == WS_EVT_CONNECT) 
+    {
         handleClient();
-    } else if (type == WS_EVT_DISCONNECT) {
+    } 
+    else if (type == WS_EVT_DISCONNECT) 
+    {
         Serial.println("WebSocket client disconnected");
-    } else if (type == WS_EVT_DATA) {
+    } 
+    else if (type == WS_EVT_DATA) 
+    {
         JsonDocument doc;
         DeserializationError error = deserializeJson(doc, data, len);
-        if (error) {
+        if (error) 
+        {
             Serial.println("Failed to parse JSON");
             return;
         }

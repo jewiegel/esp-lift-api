@@ -24,7 +24,8 @@ void SwitchDriver::update()
     if (reading != lastRawState)
         lastDebounceTime = millis();
 
-    if ((millis() - lastDebounceTime) > debounceDelay && reading != confirmedState) {
+    if ((millis() - lastDebounceTime) > debounceDelay && reading != confirmedState) 
+    {
         confirmedState = reading;
         if (confirmedState == LOW && callback)
             callback();

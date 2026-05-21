@@ -21,15 +21,19 @@ void OpenDoorsState::onExit()
 
 ElevatorState* OpenDoorsState::update()
 {
-    if (endTime != 0 && millis() >= endTime) {
+    if (endTime != 0 && millis() >= endTime) 
+    {
         endTime = 0;
-        if (!doorsFullyOpen) {
+        if (!doorsFullyOpen) 
+        {
             doorsFullyOpen = true;
             controller->setDoorsInMotion(false);
             Serial.println("[State] Doors open");
             controller->setDoorStatus(DoorStatus::Open);
             endTime = millis() + 3000;
-        } else {
+        } 
+        else 
+        {
             return new CloseDoorsState(controller);
         }
     }
