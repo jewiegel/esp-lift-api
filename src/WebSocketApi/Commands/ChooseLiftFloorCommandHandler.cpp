@@ -15,7 +15,7 @@ void ChooseLiftFloorCommandHandler::execute(const ICommand& command, std::functi
     const ChooseLiftFloorCommand& floorCommand = static_cast<const ChooseLiftFloorCommand&>(command);
     targetFloor = floorCommand.getFloor();
     this->onCompleted = onCompleted;
-    controller->goToFloor(targetFloor);
+    controller->moveToFloor(targetFloor);
     Serial.println("Lift moving to floor: " + String(targetFloor));
 }
 

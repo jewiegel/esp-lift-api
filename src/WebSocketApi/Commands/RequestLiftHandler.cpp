@@ -15,7 +15,7 @@ void RequestLiftHandler::execute(const ICommand& command, std::function<void()> 
     const RequestLiftCommand& liftCommand = static_cast<const RequestLiftCommand&>(command);
     targetFloor = liftCommand.getCurrentFloor();
     this->onCompleted = onCompleted;
-    controller->goToFloor(targetFloor);
+    controller->moveToFloor(targetFloor);
     Serial.println("Lift requested at floor: " + String(targetFloor));
 }
 

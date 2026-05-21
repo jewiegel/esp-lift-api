@@ -88,6 +88,19 @@ void LiftController::goToFloor(int floor)
     }
 }
 
+void LiftController::moveToFloor(int floor)
+{
+    if (floor < 0 || floor >= FLOOR_COUNT) return;
+    if (isMoving || doorsInMotion) return;
+
+    pendingFloor = floor;
+
+    if (doorsOpen)
+        setState(new CloseDoorsState(this));
+    else
+        setState(new MovingState(this, floor));
+}
+
 void LiftController::openDoors()
 {
     setState(new OpenDoorsState(this));

@@ -34,7 +34,7 @@ ElevatorState* MovingState::update()
 
         if (currentStepFloor == targetFloor) 
         {
-            return new OpenDoorsState(controller);
+            return new OpenDoorsState(controller, false);
         }
 
         int direction = (targetFloor > currentStepFloor) ? 1 : -1;

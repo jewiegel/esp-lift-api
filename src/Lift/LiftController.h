@@ -34,6 +34,7 @@ public:
     void setup();
     void update();
     void goToFloor(int floor);
+    void moveToFloor(int floor);
     void openDoors();
     void closeDoors();
     void setState(ElevatorState* newState);
