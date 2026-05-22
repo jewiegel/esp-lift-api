@@ -3,11 +3,15 @@
 #include <WebSocketApi/LiftManager.h>
 #include <WebSocketApi/CommandRegistry.h>
 #include <Lift/LiftController.h>
+#include "Hardware/Servo/ServoDriver.h"
+#include "Hardware/Button/ButtonDriver.h"
 
 LiftCommandScheduler scheduler;
 WebSocketHandler webSocketHandler(&scheduler);
 LiftController liftController(&scheduler);
 LiftManager liftManager(&scheduler, &webSocketHandler, &liftController);
+
+bool doorOpen = false;
 
 void setup()
 {

@@ -52,6 +52,7 @@ void WebSocketHandler::onEvent(AsyncWebSocket *server, AsyncWebSocketClient *cli
         if (error) 
         {
             Serial.println("Failed to parse JSON");
+            sendData(doc); // Send back the error message to the client
             return;
         }
         
