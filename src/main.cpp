@@ -17,7 +17,7 @@ void setup()
 {
   Serial.begin(9600);
 
-  CommandRegistry::init(&liftController, &webSocketHandler);
+  CommandRegistry::init(&liftController, &webSocketHandler, &scheduler);
   webSocketHandler.begin();
   liftController.setup();
 }

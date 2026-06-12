@@ -9,6 +9,9 @@ std::map<String, ICommand* (*)(const JsonDocument &)> CommandFactory::commandMap
     {String(apiVersion) + "ChooseLiftFloorCommand", [](const JsonDocument &doc) -> ICommand* {
         int floor = doc["floor"];
         return new ChooseLiftFloorCommand(floor);
+    }},
+    {String(apiVersion) + "StatusCommand", [](const JsonDocument &doc) -> ICommand* {
+        return new StatusCommand();
     }}
 };
 

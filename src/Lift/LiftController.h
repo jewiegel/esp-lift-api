@@ -50,4 +50,6 @@ public:
     ISwitchDriver* getFloorSwitch(int floor) { return floorSwitches[floor]; }
     int getCurrentFloor() const { return currentFloor; }
     bool areDoorsOpen() const { return doorsOpen; }
+    bool areDoorsInMotion() const { return doorsInMotion; }
+    bool getIsMoving() const { return isMoving; }
 };
