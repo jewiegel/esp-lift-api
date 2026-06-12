@@ -97,6 +97,12 @@ void LiftController::moveToFloor(int floor)
     if (floor < 0 || floor >= FLOOR_COUNT) return;
     if (isMoving || doorsInMotion) return;
 
+    if (floor == currentFloor)
+    {
+        if (!doorsOpen) setState(new OpenDoorsState(this, false));
+        return;
+    }
+
     pendingFloor = floor;
 
     if (doorsOpen)
