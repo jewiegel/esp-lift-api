@@ -14,28 +14,16 @@ LiftController::LiftController(LiftCommandScheduler* scheduler) : scheduler(sche
 LiftController::~LiftController()
 {
     delete currentState;
-    for (int i = 0; i < FLOOR_COUNT; i++) 
+    for (int i = 0; i < FLOOR_COUNT; i++)
     {
-        delete floorLeds[i];
         delete floorButtons[i];
     }
-    for (int i = 0; i < 3; i++) delete doorStatusLeds[i];
     delete callButton;
+    delete motor;
 }
 
 void LiftController::setup()
 {
-    // Initialize floor LEDs
-    floorLeds[0] = new LedDriver(PIN_FLOOR_LED_0);
-    floorLeds[1] = new LedDriver(PIN_FLOOR_LED_1);
-    floorLeds[2] = new LedDriver(PIN_FLOOR_LED_2);
-    floorLeds[3] = new LedDriver(PIN_FLOOR_LED_3);
-
-    // Initialize door status LEDs
-    doorStatusLeds[0] = new LedDriver(PIN_DOOR_LED_OPEN);
-    doorStatusLeds[1] = new LedDriver(PIN_DOOR_LED_CLOSED);
-    doorStatusLeds[2] = new LedDriver(PIN_DOOR_LED_MOVING);
-
     // Initialize floor buttons
     floorButtons[0] = new ButtonDriver(PIN_FLOOR_BTN_0);
     floorButtons[1] = new ButtonDriver(PIN_FLOOR_BTN_1);
@@ -57,8 +45,10 @@ void LiftController::setup()
     callButton = new ButtonDriver(PIN_CALL_BTN);
     callButton->onPress([this]() { scheduler->enqueue(new RequestLiftCommand(currentFloor)); });
 
-    // Turn on floor 0 LED and enter initial idle state
-    floorLeds[currentFloor]->on();
+    // Initialize lift motor
+    motor = new LiftMotorDriver(MOVING_LIFT_UP, MOVING_LIFT_DOWN);
+
+    // Enter initial idle state
     setState(new IdleState(this));
 }
 
@@ -135,23 +125,27 @@ void LiftController::setState(ElevatorState* newState)
 void LiftController::setDoorStatus(DoorStatus status)
 {
     doorsOpen = (status == DoorStatus::Open);
-    doorStatusLeds[0]->off();
-    doorStatusLeds[1]->off();
-    doorStatusLeds[2]->off();
-    switch (status) 
+}
+
+void LiftController::setCurrentFloor(int floor)
+{
+    if (floor >= 0 && floor < FLOOR_COUNT)
     {
-        case DoorStatus::Open:   doorStatusLeds[0]->on(); break;
-        case DoorStatus::Closed: doorStatusLeds[1]->on(); break;
-        case DoorStatus::Moving: doorStatusLeds[2]->on(); break;
+        currentFloor = floor;
     }
 }
 
-void LiftController::turnOnFloorLed(int floor)
+void LiftController::motorUp()
 {
-    for (int i = 0; i < FLOOR_COUNT; i++) floorLeds[i]->off();
-    if (floor >= 0 && floor < FLOOR_COUNT) 
-    {
-        floorLeds[floor]->on();
-        currentFloor = floor;
-    }
+    motor->goUp();
+}
+
+void LiftController::motorDown()
+{
+    motor->goDown();
+}
+
+void LiftController::stopMotor()
+{
+    motor->stop();
 }

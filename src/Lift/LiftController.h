@@ -3,10 +3,10 @@
 #include "PinConfig.h"
 #include "Hardware/Button/ButtonDriver.h"
 #include "Hardware/Button/IButtonDriver.h"
-#include "Hardware/Led/LedDriver.h"
-#include "Hardware/Led/ILedDriver.h"
 #include "Hardware/Switch/SwitchDriver.h"
 #include "Hardware/Switch/ISwitchDriver.h"
+#include "Hardware/LiftMotor/LiftMotorDriver.h"
+#include "Hardware/LiftMotor/ILiftMotorDriver.h"
 
 #include "LiftStates/IElevatorState.h"
 
@@ -25,11 +25,10 @@ private:
     ElevatorState* currentState = nullptr;
     LiftCommandScheduler* scheduler;
 
-    ILedDriver*    floorLeds[FLOOR_COUNT];
-    ILedDriver*    doorStatusLeds[3];
     IButtonDriver* floorButtons[FLOOR_COUNT];
     ISwitchDriver* floorSwitches[FLOOR_COUNT];
     IButtonDriver* callButton;
+    ILiftMotorDriver* motor;
 
 public:
     LiftController(LiftCommandScheduler* scheduler);
@@ -42,7 +41,10 @@ public:
     void closeDoors();
     void setState(ElevatorState* newState);
     void setDoorStatus(DoorStatus status);
-    void turnOnFloorLed(int floor);
+    void setCurrentFloor(int floor);
+    void motorUp();
+    void motorDown();
+    void stopMotor();
     void setIsMoving(bool moving) { isMoving = moving; }
     void setDoorsInMotion(bool inMotion) { doorsInMotion = inMotion; }
     void setPendingFloor(int floor) { pendingFloor = floor; }

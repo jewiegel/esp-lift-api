@@ -14,10 +14,15 @@ void MovingState::onEnter()
     controller->setIsMoving(true);
     Serial.println("[State] Moving to floor: " + String(targetFloor));
     controller->setDoorStatus(DoorStatus::Closed);
+
+    // Start the physical lift motor in the right direction
+    if (direction > 0) controller->motorUp();
+    else               controller->motorDown();
 }
 
 void MovingState::onExit()
 {
+    controller->stopMotor();
     controller->setIsMoving(false);
     Serial.println("Exiting Moving state");
 }
@@ -29,11 +34,12 @@ ElevatorState* MovingState::update()
     if (triggered && !lastSwitchState) 
     {
         currentStepFloor = nextFloor;
-        controller->turnOnFloorLed(currentStepFloor);
+        controller->setCurrentFloor(currentStepFloor);
         Serial.println("[State] Arrived at floor: " + String(currentStepFloor));
 
-        if (currentStepFloor == targetFloor) 
+        if (currentStepFloor == targetFloor)
         {
+            controller->stopMotor();
             return new OpenDoorsState(controller, false);
         }
 
