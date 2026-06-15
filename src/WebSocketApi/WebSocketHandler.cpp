@@ -59,6 +59,15 @@ void WebSocketHandler::onEvent(AsyncWebSocket *server, AsyncWebSocketClient *cli
         ICommand* command = CommandFactory::createCommand(doc);
         if (!command) { Serial.println("Unknown command"); return; }
 
+        // Status is a query, not lift logic — handle immediately and bypass the FIFO queue
+        if (command->getName() == "Status")
+        {
+            ILiftCommandHandler* handler = CommandRegistry::convertHandler(command->getName());
+            if (handler) handler->execute(*command, [](){});
+            delete command;
+            return;
+        }
+
         scheduler->enqueue(command);
     }
 }
