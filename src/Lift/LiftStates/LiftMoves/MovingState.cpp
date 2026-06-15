@@ -26,13 +26,15 @@ ElevatorState* MovingState::update()
 {
     bool triggered = controller->getFloorSwitch(nextFloor)->isTriggered();
 
-    if (triggered && !lastSwitchState) {
+    if (triggered && !lastSwitchState) 
+    {
         currentStepFloor = nextFloor;
         controller->turnOnFloorLed(currentStepFloor);
         Serial.println("[State] Arrived at floor: " + String(currentStepFloor));
 
-        if (currentStepFloor == targetFloor) {
-            return new OpenDoorsState(controller);
+        if (currentStepFloor == targetFloor) 
+        {
+            return new OpenDoorsState(controller, false);
         }
 
         int direction = (targetFloor > currentStepFloor) ? 1 : -1;

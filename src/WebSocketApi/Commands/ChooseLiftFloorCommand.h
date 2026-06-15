@@ -10,11 +10,13 @@ public:
     ChooseLiftFloorCommand(int floor) : floor(floor) {}
     ~ChooseLiftFloorCommand() {}
 
-    String getName() const override {
+    String getName() const override 
+    {
         return "ChooseLiftFloor";
     }
 
-    int getFloor() const {
+    int getFloor() const 
+    {
         return floor;
     }
 };

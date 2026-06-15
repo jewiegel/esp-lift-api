@@ -2,16 +2,21 @@
 
 #include "ILiftCommandHandler.h"
 #include "RequestLiftCommand.h"
+#include "Lift/LiftController.h"
+
+class WebSocketHandler;
 
 class RequestLiftHandler : public ILiftCommandHandler
 {
 private:
+    LiftController* controller;
+    WebSocketHandler* wsHandler;
     std::function<void()> onCompleted;
-    unsigned long endTime = 0;
+    int targetFloor = -1;
 public:
-    RequestLiftHandler();
+    RequestLiftHandler(LiftController* controller, WebSocketHandler* wsHandler);
     ~RequestLiftHandler();
 
-    void execute(const ICommand &command, std::function<void()> onCompleted) override;
+    void execute(const ICommand& command, std::function<void()> onCompleted) override;
     void update() override;
 };

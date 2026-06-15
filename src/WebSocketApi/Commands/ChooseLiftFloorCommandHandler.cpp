@@ -1,6 +1,8 @@
 #include "ChooseLiftFloorCommandHandler.h"
+#include "../WebSocketHandler.h"
 
-ChooseLiftFloorCommandHandler::ChooseLiftFloorCommandHandler()
+ChooseLiftFloorCommandHandler::ChooseLiftFloorCommandHandler(LiftController* controller, WebSocketHandler* wsHandler)
+    : controller(controller), wsHandler(wsHandler)
 {
 }
 
@@ -8,20 +10,23 @@ ChooseLiftFloorCommandHandler::~ChooseLiftFloorCommandHandler()
 {
 }
 
-void ChooseLiftFloorCommandHandler::execute(const ICommand &command, std::function<void()> onCompleted)
+void ChooseLiftFloorCommandHandler::execute(const ICommand& command, std::function<void()> onCompleted)
 {
-    const ChooseLiftFloorCommand &floorCommand = static_cast<const ChooseLiftFloorCommand&>(command);
-
-    Serial.println("Lift moving to floor: " + String(floorCommand.getFloor()) + " — arriving in 5s");
+    const ChooseLiftFloorCommand& floorCommand = static_cast<const ChooseLiftFloorCommand&>(command);
+    targetFloor = floorCommand.getFloor();
     this->onCompleted = onCompleted;
-    endTime = millis() + 5000;
+    controller->moveToFloor(targetFloor);
+    Serial.println("Lift moving to floor: " + String(targetFloor));
 }
 
 void ChooseLiftFloorCommandHandler::update()
 {
-    if (endTime > 0 && millis() >= endTime) {
-        endTime = 0;
-        Serial.println("Lift arrived at floor");
+    if (controller->getCurrentFloor() == targetFloor && controller->areDoorsOpen()) 
+    {
+        JsonDocument doc;
+        doc["event"] = "floorReached";
+        doc["floor"] = targetFloor;
+        wsHandler->sendData(doc);
         onCompleted();
     }
 }

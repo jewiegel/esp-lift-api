@@ -3,6 +3,7 @@
 #include "ICommand.h"
 #include "RequestLiftCommand.h"
 #include "ChooseLiftFloorCommand.h"
+#include "StatusCommand.h"
 
 #include <map>
 #include <ArduinoJson.h>

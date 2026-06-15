@@ -10,6 +10,8 @@
 
 #include "LiftStates/IElevatorState.h"
 
+class LiftCommandScheduler;
+
 enum class DoorStatus { Open, Closed, Moving };
 
 class LiftController
@@ -21,6 +23,7 @@ private:
     bool doorsInMotion = false;
     bool isMoving = false;
     ElevatorState* currentState = nullptr;
+    LiftCommandScheduler* scheduler;
 
     ILedDriver*    floorLeds[FLOOR_COUNT];
     ILedDriver*    doorStatusLeds[3];
@@ -29,11 +32,12 @@ private:
     IButtonDriver* callButton;
 
 public:
-    LiftController();
+    LiftController(LiftCommandScheduler* scheduler);
     ~LiftController();
     void setup();
     void update();
     void goToFloor(int floor);
+    void moveToFloor(int floor);
     void openDoors();
     void closeDoors();
     void setState(ElevatorState* newState);
@@ -45,4 +49,7 @@ public:
     int getPendingFloor() const { return pendingFloor; }
     ISwitchDriver* getFloorSwitch(int floor) { return floorSwitches[floor]; }
     int getCurrentFloor() const { return currentFloor; }
+    bool areDoorsOpen() const { return doorsOpen; }
+    bool areDoorsInMotion() const { return doorsInMotion; }
+    bool getIsMoving() const { return isMoving; }
 };

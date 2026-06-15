@@ -17,4 +17,6 @@ public:
     void processNext();
     void commandCompleted();
     void clearCommands();
+    bool hasPendingCommands() const { return !commandQueue.empty(); }
+    int pendingCommandCount() const { return commandQueue.size(); }
 };

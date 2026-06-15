@@ -3,15 +3,19 @@
 #include "LiftStates/Doors/CloseDoorsState.h"
 #include "LiftStates/LiftMoves/IdleState.h"
 #include "LiftStates/LiftMoves/MovingState.h"
+#include "../WebSocketApi/LiftCommandScheduler.h"
+#include "../WebSocketApi/Commands/ChooseLiftFloorCommand.h"
+#include "../WebSocketApi/Commands/RequestLiftCommand.h"
 
-LiftController::LiftController()
+LiftController::LiftController(LiftCommandScheduler* scheduler) : scheduler(scheduler)
 {
 }
 
 LiftController::~LiftController()
 {
     delete currentState;
-    for (int i = 0; i < FLOOR_COUNT; i++) {
+    for (int i = 0; i < FLOOR_COUNT; i++) 
+    {
         delete floorLeds[i];
         delete floorButtons[i];
     }
@@ -44,12 +48,14 @@ void LiftController::setup()
     floorSwitches[2] = new SwitchDriver(PIN_FLOOR_SWITCH_2);
     floorSwitches[3] = new SwitchDriver(PIN_FLOOR_SWITCH_3);
 
-    for (int i = 0; i < FLOOR_COUNT; i++) {
-        floorButtons[i]->onPress([this, i]() { goToFloor(i); });
+    for (int i = 0; i < FLOOR_COUNT; i++)
+    {
+        floorButtons[i]->onPress([this, i]() { scheduler->enqueue(new ChooseLiftFloorCommand(i)); });
     }
 
     // Initialize call button
     callButton = new ButtonDriver(PIN_CALL_BTN);
+    callButton->onPress([this]() { scheduler->enqueue(new RequestLiftCommand(currentFloor)); });
 
     // Turn on floor 0 LED and enter initial idle state
     floorLeds[currentFloor]->on();
@@ -62,7 +68,8 @@ void LiftController::update()
     for (int i = 0; i < FLOOR_COUNT; i++) floorSwitches[i]->update();
     callButton->update();
 
-    if (currentState) {
+    if (currentState) 
+    {
         ElevatorState* next = currentState->update();
         if (next) setState(next);
     }
@@ -75,11 +82,33 @@ void LiftController::goToFloor(int floor)
 
     pendingFloor = floor;
 
-    if (doorsOpen) {
+    if (doorsOpen) 
+    {
         setState(new CloseDoorsState(this));
-    } else {
+    } 
+    else 
+    {
         setState(new OpenDoorsState(this));
     }
+}
+
+void LiftController::moveToFloor(int floor)
+{
+    if (floor < 0 || floor >= FLOOR_COUNT) return;
+    if (isMoving || doorsInMotion) return;
+
+    if (floor == currentFloor)
+    {
+        if (!doorsOpen) setState(new OpenDoorsState(this, false));
+        return;
+    }
+
+    pendingFloor = floor;
+
+    if (doorsOpen)
+        setState(new CloseDoorsState(this));
+    else
+        setState(new MovingState(this, floor));
 }
 
 void LiftController::openDoors()
@@ -94,7 +123,8 @@ void LiftController::closeDoors()
 
 void LiftController::setState(ElevatorState* newState)
 {
-    if (currentState) {
+    if (currentState) 
+    {
         currentState->onExit();
         delete currentState;
     }
@@ -108,7 +138,8 @@ void LiftController::setDoorStatus(DoorStatus status)
     doorStatusLeds[0]->off();
     doorStatusLeds[1]->off();
     doorStatusLeds[2]->off();
-    switch (status) {
+    switch (status) 
+    {
         case DoorStatus::Open:   doorStatusLeds[0]->on(); break;
         case DoorStatus::Closed: doorStatusLeds[1]->on(); break;
         case DoorStatus::Moving: doorStatusLeds[2]->on(); break;
@@ -118,7 +149,8 @@ void LiftController::setDoorStatus(DoorStatus status)
 void LiftController::turnOnFloorLed(int floor)
 {
     for (int i = 0; i < FLOOR_COUNT; i++) floorLeds[i]->off();
-    if (floor >= 0 && floor < FLOOR_COUNT) {
+    if (floor >= 0 && floor < FLOOR_COUNT) 
+    {
         floorLeds[floor]->on();
         currentFloor = floor;
     }

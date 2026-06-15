@@ -27,3 +27,6 @@ constexpr int PIN_FLOOR_SWITCH_3 = 47;
 
 // Call button
 constexpr int PIN_CALL_BTN = 6;
+
+// Servo pins (for doors)
+constexpr int PIN_SERVO = 14;

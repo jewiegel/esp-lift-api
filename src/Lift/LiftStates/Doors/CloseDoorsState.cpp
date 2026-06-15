@@ -22,10 +22,12 @@ void CloseDoorsState::onExit()
 
 ElevatorState* CloseDoorsState::update()
 {
-    if (endTime != 0 && millis() >= endTime) {
+    if (endTime != 0 && millis() >= endTime) 
+    {
         endTime = 0;
         int floor = controller->getPendingFloor();
-        if (floor != -1 && floor != controller->getCurrentFloor()) {
+        if (floor != -1 && floor != controller->getCurrentFloor()) 
+        {
             controller->setPendingFloor(-1);
             return new MovingState(controller, floor);
         }

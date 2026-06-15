@@ -37,20 +37,36 @@ void WebSocketHandler::handleClient()
 
 void WebSocketHandler::onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
 {
-    if (type == WS_EVT_CONNECT) {
+    if (type == WS_EVT_CONNECT) 
+    {
         handleClient();
-    } else if (type == WS_EVT_DISCONNECT) {
+    } 
+    else if (type == WS_EVT_DISCONNECT) 
+    {
         Serial.println("WebSocket client disconnected");
-    } else if (type == WS_EVT_DATA) {
+    } 
+    else if (type == WS_EVT_DATA) 
+    {
         JsonDocument doc;
         DeserializationError error = deserializeJson(doc, data, len);
-        if (error) {
+        if (error) 
+        {
             Serial.println("Failed to parse JSON");
+            sendData(doc); // Send back the error message to the client
             return;
         }
         
         ICommand* command = CommandFactory::createCommand(doc);
         if (!command) { Serial.println("Unknown command"); return; }
+
+        // Status is a query, not lift logic — handle immediately and bypass the FIFO queue
+        if (command->getName() == "Status")
+        {
+            ILiftCommandHandler* handler = CommandRegistry::convertHandler(command->getName());
+            if (handler) handler->execute(*command, [](){});
+            delete command;
+            return;
+        }
 
         scheduler->enqueue(command);
     }
@@ -66,12 +82,4 @@ void WebSocketHandler::sendData(const JsonDocument& doc)
 void WebSocketHandler::update()
 {
     webSocket->cleanupClients();
-
-    static unsigned long lastTime = 0;
-    if (millis() - lastTime > 5000) {
-        lastTime = millis();
-        JsonDocument doc;
-        doc["uptime"] = millis() / 1000;
-        sendData(doc);
-    }
 }

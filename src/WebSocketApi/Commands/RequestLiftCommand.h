@@ -10,11 +10,13 @@ public:
     RequestLiftCommand(int floor) : currentFloor(floor) {}
     ~RequestLiftCommand() {}
 
-    String getName() const override {
+    String getName() const override 
+    {
         return "RequestLift";
     }
 
-    int getCurrentFloor() const {
+    int getCurrentFloor() const 
+    {
         return currentFloor;
     }
 };
