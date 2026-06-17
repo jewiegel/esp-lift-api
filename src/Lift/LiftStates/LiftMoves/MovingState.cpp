@@ -1,7 +1,9 @@
 #include "MovingState.h"
 #include "../../LiftStates/Doors/OpenDoorsState.h"
+#include "IdleState.h"
 
-MovingState::MovingState(LiftController* controller, int targetFloor) : controller(controller), targetFloor(targetFloor), currentStepFloor(0)
+MovingState::MovingState(LiftController* controller, int targetFloor, bool openDoorsOnArrival)
+    : controller(controller), targetFloor(targetFloor), currentStepFloor(0), openDoorsOnArrival(openDoorsOnArrival)
 {
 }
 
@@ -40,7 +42,9 @@ ElevatorState* MovingState::update()
         if (currentStepFloor == targetFloor)
         {
             controller->stopMotor();
-            return new OpenDoorsState(controller, false);
+            if (openDoorsOnArrival)
+                return new OpenDoorsState(controller, false);
+            return new IdleState(controller);
         }
 
         int direction = (targetFloor > currentStepFloor) ? 1 : -1;

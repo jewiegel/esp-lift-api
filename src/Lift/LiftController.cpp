@@ -6,6 +6,7 @@
 #include "../WebSocketApi/LiftCommandScheduler.h"
 #include "../WebSocketApi/Commands/ChooseLiftFloorCommand.h"
 #include "../WebSocketApi/Commands/RequestLiftCommand.h"
+#include "../WebSocketApi/Commands/ResetLiftCommand.h"
 
 LiftController::LiftController(LiftCommandScheduler* scheduler) : scheduler(scheduler)
 {
@@ -19,7 +20,9 @@ LiftController::~LiftController()
         delete floorButtons[i];
     }
     delete callButton;
+    delete resetButton;
     delete motor;
+    delete doorMotor;
 }
 
 void LiftController::setup()
@@ -29,6 +32,10 @@ void LiftController::setup()
     floorButtons[1] = new ButtonDriver(PIN_FLOOR_BTN_1);
     floorButtons[2] = new ButtonDriver(PIN_FLOOR_BTN_2);
     floorButtons[3] = new ButtonDriver(PIN_FLOOR_BTN_3);
+
+    // Initialize reset button
+    resetButton = new ButtonDriver(PIN_RESET_BTN);
+    resetButton->onPress([this]() { scheduler->enqueue(new ResetLiftCommand()); });
 
     // Initialize floor switches
     floorSwitches[0] = new SwitchDriver(PIN_FLOOR_SWITCH_0);
@@ -48,6 +55,9 @@ void LiftController::setup()
     // Initialize lift motor
     motor = new LiftMotorDriver(MOVING_LIFT_UP, MOVING_LIFT_DOWN);
 
+    // Initialize door motor
+    doorMotor = new DoorMotor(MOVING_DOOR_UP, MOVING_DOOR_DOWN);
+
     // Enter initial idle state
     setState(new IdleState(this));
 }
@@ -57,6 +67,7 @@ void LiftController::update()
     for (int i = 0; i < FLOOR_COUNT; i++) floorButtons[i]->update();
     for (int i = 0; i < FLOOR_COUNT; i++) floorSwitches[i]->update();
     callButton->update();
+    resetButton->update();
 
     if (currentState) 
     {
@@ -99,6 +110,29 @@ void LiftController::moveToFloor(int floor)
         setState(new CloseDoorsState(this));
     else
         setState(new MovingState(this, floor));
+}
+
+void LiftController::resetLift()
+{
+    if (isMoving || doorsInMotion) return;
+
+    pendingFloor = 0;
+
+    if (doorsOpen)
+    {
+        // Close the doors first; CloseDoorsState then moves to floor 0 without reopening
+        setState(new CloseDoorsState(this, false));
+    }
+    else if (currentFloor != 0)
+    {
+        // Doors already closed: move straight to floor 0 and keep them closed on arrival
+        setState(new MovingState(this, 0, false));
+    }
+    else
+    {
+        // Already home with doors closed
+        setState(new IdleState(this));
+    }
 }
 
 void LiftController::openDoors()
@@ -148,4 +182,19 @@ void LiftController::motorDown()
 void LiftController::stopMotor()
 {
     motor->stop();
+}
+
+void LiftController::openDoor()
+{
+    doorMotor->goUp();
+}
+
+void LiftController::closeDoor()
+{
+    doorMotor->goDown();
+}
+
+void LiftController::stopDoor()
+{
+    doorMotor->stop();
 }

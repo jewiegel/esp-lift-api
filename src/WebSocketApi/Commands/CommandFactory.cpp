@@ -12,6 +12,9 @@ std::map<String, ICommand* (*)(const JsonDocument &)> CommandFactory::commandMap
     }},
     {String(apiVersion) + "StatusCommand", [](const JsonDocument &doc) -> ICommand* {
         return new StatusCommand();
+    }},
+    {String(apiVersion) + "ResetLiftCommand", [](const JsonDocument &doc) -> ICommand* {
+        return new ResetLiftCommand();
     }}
 };
 

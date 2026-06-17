@@ -6,7 +6,8 @@
 #include "Hardware/Switch/SwitchDriver.h"
 #include "Hardware/Switch/ISwitchDriver.h"
 #include "Hardware/LiftMotor/LiftMotorDriver.h"
-#include "Hardware/LiftMotor/ILiftMotorDriver.h"
+#include "Hardware/LiftMotor/DoorMotorDriver.h"
+#include "Hardware/LiftMotor/IBinaryMotorDriver.h"
 
 #include "LiftStates/IElevatorState.h"
 
@@ -27,8 +28,10 @@ private:
 
     IButtonDriver* floorButtons[FLOOR_COUNT];
     ISwitchDriver* floorSwitches[FLOOR_COUNT];
+    IButtonDriver* resetButton;
     IButtonDriver* callButton;
-    ILiftMotorDriver* motor;
+    IBinaryMotorDriver* motor;
+    IBinaryMotorDriver* doorMotor;
 
 public:
     LiftController(LiftCommandScheduler* scheduler);
@@ -37,6 +40,7 @@ public:
     void update();
     void goToFloor(int floor);
     void moveToFloor(int floor);
+    void resetLift();
     void openDoors();
     void closeDoors();
     void setState(ElevatorState* newState);
@@ -45,6 +49,9 @@ public:
     void motorUp();
     void motorDown();
     void stopMotor();
+    void openDoor();
+    void closeDoor();
+    void stopDoor();
     void setIsMoving(bool moving) { isMoving = moving; }
     void setDoorsInMotion(bool inMotion) { doorsInMotion = inMotion; }
     void setPendingFloor(int floor) { pendingFloor = floor; }

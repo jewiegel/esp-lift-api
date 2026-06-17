@@ -3,15 +3,16 @@
 #include "IBinaryMotorDriver.h"
 #include <Arduino.h>
 
-class LiftMotorDriver : public IBinaryMotorDriver
+class DoorMotor : public IBinaryMotorDriver
 {
 private:
     int pinUp;
     int pinDown;
 public:
-    LiftMotorDriver(int pinUp, int pinDown);
-    ~LiftMotorDriver();
+    DoorMotor(int pinUp, int pinDown);
+    ~DoorMotor();
     void goUp() override;
     void goDown() override;
     void stop() override;
+
 };

@@ -11,11 +11,13 @@ void OpenDoorsState::onEnter()
     controller->setDoorsInMotion(true);
     Serial.println("[State] Doors opening");
     controller->setDoorStatus(DoorStatus::Moving);
-    endTime = millis() + 3000;
+    controller->openDoor();
+    endTime = millis() + 6000;
 }
 
 void OpenDoorsState::onExit()
 {
+    controller->stopDoor();
     Serial.println("Exiting Open Doors state");
 }
 
@@ -27,6 +29,7 @@ ElevatorState* OpenDoorsState::update()
         if (!doorsFullyOpen)
         {
             doorsFullyOpen = true;
+            controller->stopDoor();
             controller->setDoorsInMotion(false);
             Serial.println("[State] Doors open");
             controller->setDoorStatus(DoorStatus::Open);

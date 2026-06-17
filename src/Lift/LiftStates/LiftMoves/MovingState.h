@@ -11,8 +11,9 @@ private:
     int currentStepFloor;
     int nextFloor;
     bool lastSwitchState = false;
+    bool openDoorsOnArrival;
 public:
-    MovingState(LiftController* controller, int targetFloor);
+    MovingState(LiftController* controller, int targetFloor, bool openDoorsOnArrival = true);
     void onEnter() override;
     void onExit() override;
     ElevatorState* update() override;
