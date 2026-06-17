@@ -1,14 +1,18 @@
 #include "CommandRegistry.h"
 #include "WebSocketHandler.h"
+#include "Lift/LiftController.h"
 
 RequestLiftHandler* CommandRegistry::requestLiftHandler = nullptr;
 ChooseLiftFloorCommandHandler* CommandRegistry::chooseLiftFloorHandler = nullptr;
 StatusCommandHandler* CommandRegistry::statusHandler = nullptr;
 ResetLiftCommandHandler* CommandRegistry::resetLiftHandler = nullptr;
+LiftController* CommandRegistry::liftController = nullptr;
 std::map<String, ILiftCommandHandler*> CommandRegistry::handlerMap;
 
 void CommandRegistry::init(LiftController* controller, WebSocketHandler* wsHandler, LiftCommandScheduler* scheduler)
 {
+    liftController = controller;
+
     requestLiftHandler = new RequestLiftHandler(controller, wsHandler);
     chooseLiftFloorHandler = new ChooseLiftFloorCommandHandler(controller, wsHandler);
     statusHandler = new StatusCommandHandler(controller, wsHandler, scheduler);
@@ -24,4 +28,14 @@ ILiftCommandHandler* CommandRegistry::convertHandler(const String& commandName)
 {
     auto it = handlerMap.find(commandName);
     return it != handlerMap.end() ? it->second : nullptr;
+}
+
+void CommandRegistry::registerRobotWait(int floor)
+{
+    if (liftController) liftController->registerRobotWait(floor);
+}
+
+void CommandRegistry::notifyRobotReady()
+{
+    if (liftController) liftController->robotReady();
 }

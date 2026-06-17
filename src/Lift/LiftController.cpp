@@ -31,7 +31,6 @@ void LiftController::setup()
     floorButtons[0] = new ButtonDriver(PIN_FLOOR_BTN_0);
     floorButtons[1] = new ButtonDriver(PIN_FLOOR_BTN_1);
     floorButtons[2] = new ButtonDriver(PIN_FLOOR_BTN_2);
-    floorButtons[3] = new ButtonDriver(PIN_FLOOR_BTN_3);
 
     // Initialize reset button
     resetButton = new ButtonDriver(PIN_RESET_BTN);
@@ -41,16 +40,15 @@ void LiftController::setup()
     floorSwitches[0] = new SwitchDriver(PIN_FLOOR_SWITCH_0);
     floorSwitches[1] = new SwitchDriver(PIN_FLOOR_SWITCH_1);
     floorSwitches[2] = new SwitchDriver(PIN_FLOOR_SWITCH_2);
-    floorSwitches[3] = new SwitchDriver(PIN_FLOOR_SWITCH_3);
 
     for (int i = 0; i < FLOOR_COUNT; i++)
     {
-        floorButtons[i]->onPress([this, i]() { scheduler->enqueue(new ChooseLiftFloorCommand(i)); });
+        floorButtons[i]->onPress([this, i]() { scheduler->enqueue(new ChooseLiftFloorCommand(i, false)); });
     }
 
     // Initialize call button
     callButton = new ButtonDriver(PIN_CALL_BTN);
-    callButton->onPress([this]() { scheduler->enqueue(new RequestLiftCommand(currentFloor)); });
+    callButton->onPress([this]() { scheduler->enqueue(new RequestLiftCommand(currentFloor, false)); });
 
     // Initialize lift motor
     motor = new LiftMotorDriver(MOVING_LIFT_UP, MOVING_LIFT_DOWN);
@@ -197,4 +195,27 @@ void LiftController::closeDoor()
 void LiftController::stopDoor()
 {
     doorMotor->stop();
+}
+
+void LiftController::registerRobotWait(int floor)
+{
+    if (floor >= 0 && floor < FLOOR_COUNT)
+    {
+        robotWaitFloors[floor] = true;
+    }
+}
+
+void LiftController::robotReady()
+{
+    // Clear the wait for the floor the lift is currently at
+    if (currentFloor >= 0 && currentFloor < FLOOR_COUNT)
+    {
+        robotWaitFloors[currentFloor] = false;
+    }
+}
+
+bool LiftController::isWaitingForRobotHere() const
+{
+    // Holding only makes sense once the lift has arrived with its doors open
+    return doorsOpen && robotWaitFloors[currentFloor];
 }

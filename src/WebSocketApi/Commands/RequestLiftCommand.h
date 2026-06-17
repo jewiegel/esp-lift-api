@@ -6,8 +6,9 @@ class RequestLiftCommand : public ICommand
 {
 private:
     int currentFloor;
+    bool waitForRobot;
 public:
-    RequestLiftCommand(int floor) : currentFloor(floor) {}
+    RequestLiftCommand(int floor, bool waitForRobot) : currentFloor(floor), waitForRobot(waitForRobot) {}
     ~RequestLiftCommand() {}
 
     String getName() const override 
@@ -18,5 +19,10 @@ public:
     int getCurrentFloor() const 
     {
         return currentFloor;
+    }
+
+    bool getWaitForRobot() const
+    {
+        return waitForRobot;
     }
 };

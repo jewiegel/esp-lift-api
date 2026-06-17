@@ -13,6 +13,7 @@ private:
     WebSocketHandler* wsHandler;
     std::function<void()> onCompleted;
     int targetFloor = -1;
+    bool arrivedAnnounced = false;
 public:
     RequestLiftHandler(LiftController* controller, WebSocketHandler* wsHandler);
     ~RequestLiftHandler();

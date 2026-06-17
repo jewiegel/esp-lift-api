@@ -6,17 +6,23 @@ class ChooseLiftFloorCommand : public ICommand
 {
 private:
     int floor;
+    bool waitForRobot;
 public:
-    ChooseLiftFloorCommand(int floor) : floor(floor) {}
+    ChooseLiftFloorCommand(int floor, bool waitForRobot) : floor(floor), waitForRobot(waitForRobot) {}
     ~ChooseLiftFloorCommand() {}
 
-    String getName() const override 
+    String getName() const override
     {
         return "ChooseLiftFloor";
     }
 
-    int getFloor() const 
+    int getFloor() const
     {
         return floor;
+    }
+
+    bool getWaitForRobot() const
+    {
+        return waitForRobot;
     }
 };

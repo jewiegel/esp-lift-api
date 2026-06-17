@@ -23,6 +23,7 @@ private:
     bool doorsOpen = false;
     bool doorsInMotion = false;
     bool isMoving = false;
+    volatile bool robotWaitFloors[FLOOR_COUNT] = {};
     ElevatorState* currentState = nullptr;
     LiftCommandScheduler* scheduler;
 
@@ -61,4 +62,10 @@ public:
     bool areDoorsOpen() const { return doorsOpen; }
     bool areDoorsInMotion() const { return doorsInMotion; }
     bool getIsMoving() const { return isMoving; }
+
+    // Robot waiting: a floor is registered up front (independent of the FIFO
+    // queue); on arrival there the lift holds until the robot signals 'ready'.
+    void registerRobotWait(int floor);
+    void robotReady();
+    bool isWaitingForRobotHere() const;
 };
