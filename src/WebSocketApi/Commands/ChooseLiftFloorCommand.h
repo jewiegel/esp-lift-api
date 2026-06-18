@@ -25,4 +25,9 @@ public:
     {
         return waitForRobot;
     }
+
+    int getTargetFloor() const override
+    {
+        return floor;
+    }
 };

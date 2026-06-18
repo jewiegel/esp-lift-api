@@ -16,7 +16,7 @@ public:
         return "RequestLift";
     }
 
-    int getCurrentFloor() const 
+    int getCurrentFloor() const
     {
         return currentFloor;
     }
@@ -24,5 +24,10 @@ public:
     bool getWaitForRobot() const
     {
         return waitForRobot;
+    }
+
+    int getTargetFloor() const override
+    {
+        return currentFloor;
     }
 };

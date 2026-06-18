@@ -2,14 +2,17 @@
 
 #include "Commands/ICommand.h"
 #include "CommandRegistry.h"
-#include <queue>
+#include <deque>
 
 class LiftCommandScheduler
 {
 private:
-    std::queue<ICommand*> commandQueue;
+    std::deque<ICommand*> commandQueue;
     bool busy = false;
     ILiftCommandHandler* activeHandler = nullptr;
+    int activeFloor = -1;
+
+    bool isFloorAlreadyQueued(int floor) const;
 public:
     LiftCommandScheduler();
     ~LiftCommandScheduler();
