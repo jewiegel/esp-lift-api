@@ -19,8 +19,12 @@ LiftController::~LiftController()
     {
         delete floorButtons[i];
     }
+    delete doorSwitchUp;
+    delete doorSwitchDown;
     delete callButton;
     delete resetButton;
+    delete doorUpButton;
+    delete doorDownButton;
     delete motor;
     delete doorMotor;
 }
@@ -32,14 +36,14 @@ void LiftController::setup()
     floorButtons[1] = new ButtonDriver(PIN_FLOOR_BTN_1);
     floorButtons[2] = new ButtonDriver(PIN_FLOOR_BTN_2);
 
-    // Initialize reset button
-    resetButton = new ButtonDriver(PIN_RESET_BTN);
-    resetButton->onPress([this]() { scheduler->enqueue(new ResetLiftCommand()); });
-
     // Initialize floor switches
     floorSwitches[0] = new SwitchDriver(PIN_FLOOR_SWITCH_0);
     floorSwitches[1] = new SwitchDriver(PIN_FLOOR_SWITCH_1);
     floorSwitches[2] = new SwitchDriver(PIN_FLOOR_SWITCH_2);
+
+    // Initialize door end-stop switches
+    doorSwitchUp = new SwitchDriver(PIN_DOOR_SWITCH_UP);
+    doorSwitchDown = new SwitchDriver(PIN_DOOR_SWITCH_DOWN);
 
     for (int i = 0; i < FLOOR_COUNT; i++)
     {
@@ -49,6 +53,16 @@ void LiftController::setup()
     // Initialize call button
     callButton = new ButtonDriver(PIN_CALL_BTN);
     callButton->onPress([this]() { scheduler->enqueue(new RequestLiftCommand(currentFloor, false)); });
+
+    // Initialize reset button: send the lift home (floor 0) with doors closed
+    resetButton = new ButtonDriver(PIN_RESET_BTN);
+    resetButton->onPress([this]() { scheduler->enqueue(new ResetLiftCommand()); });
+
+    // Initialize manual door buttons
+    doorUpButton = new ButtonDriver(PIN_DOOR_BTN_UP);
+    doorUpButton->onPress([this]() { manualOpenDoor(); });
+    doorDownButton = new ButtonDriver(PIN_DOOR_BTN_DOWN);
+    doorDownButton->onPress([this]() { manualCloseDoor(); });
 
     // Initialize lift motor
     motor = new LiftMotorDriver(MOVING_LIFT_UP, MOVING_LIFT_DOWN);
@@ -64,10 +78,14 @@ void LiftController::update()
 {
     for (int i = 0; i < FLOOR_COUNT; i++) floorButtons[i]->update();
     for (int i = 0; i < FLOOR_COUNT; i++) floorSwitches[i]->update();
+    doorSwitchUp->update();
+    doorSwitchDown->update();
     callButton->update();
     resetButton->update();
+    doorUpButton->update();
+    doorDownButton->update();
 
-    if (currentState) 
+    if (currentState)
     {
         ElevatorState* next = currentState->update();
         if (next) setState(next);
@@ -140,6 +158,20 @@ void LiftController::openDoors()
 
 void LiftController::closeDoors()
 {
+    setState(new CloseDoorsState(this));
+}
+
+void LiftController::manualOpenDoor()
+{
+    // Only when the lift is standing still and the doors aren't already moving/open
+    if (isMoving || doorsInMotion || doorsOpen) return;
+    setState(new OpenDoorsState(this, false));  // stay open until closed manually
+}
+
+void LiftController::manualCloseDoor()
+{
+    // Only when the lift is standing still and the doors are actually open
+    if (isMoving || doorsInMotion || !doorsOpen) return;
     setState(new CloseDoorsState(this));
 }
 

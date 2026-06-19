@@ -7,8 +7,9 @@ class CloseDoorsState : public ElevatorState
 {
 private:
     LiftController* controller;
-    unsigned long endTime = 0;
     bool openDoorsOnArrival;
+    unsigned long startTime = 0;
+    static constexpr unsigned long CLOSE_TIMEOUT_MS = 7000;
 public:
     CloseDoorsState(LiftController* controller, bool openDoorsOnArrival = true);
     void onEnter() override;

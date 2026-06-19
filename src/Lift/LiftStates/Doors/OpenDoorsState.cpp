@@ -12,7 +12,8 @@ void OpenDoorsState::onEnter()
     Serial.println("[State] Doors opening");
     controller->setDoorStatus(DoorStatus::Moving);
     controller->openDoor();
-    endTime = millis() + 6000;
+    endTime = 0;
+    startTime = millis();
 }
 
 void OpenDoorsState::onExit()
@@ -23,11 +24,16 @@ void OpenDoorsState::onExit()
 
 ElevatorState* OpenDoorsState::update()
 {
-    if (endTime != 0 && millis() >= endTime) 
+    if (!doorsFullyOpen)
     {
-        endTime = 0;
-        if (!doorsFullyOpen)
+        // Wait until the door physically reaches the open end-stop switch.
+        // Failsafe: if the switch never triggers (broken switch / jammed door),
+        // give up after OPEN_TIMEOUT_MS and proceed as if the doors are open
+        // so the motor doesn't keep driving indefinitely.
+        if (controller->isDoorFullyOpen() || millis() - startTime >= OPEN_TIMEOUT_MS)
         {
+            if (!controller->isDoorFullyOpen())
+                Serial.println("[State] Open-door switch not reached within 7s - failsafe timeout");
             doorsFullyOpen = true;
             controller->stopDoor();
             controller->setDoorsInMotion(false);
@@ -35,10 +41,13 @@ ElevatorState* OpenDoorsState::update()
             controller->setDoorStatus(DoorStatus::Open);
             if (autoClose) endTime = millis() + 3000;
         }
-        else
-        {
-            return new CloseDoorsState(controller);
-        }
+        return nullptr;
+    }
+
+    // Fully open: auto-close after the stay-open delay (if enabled)
+    if (autoClose && endTime != 0 && millis() >= endTime)
+    {
+        return new CloseDoorsState(controller);
     }
     return nullptr;
 }

@@ -29,7 +29,11 @@ private:
 
     IButtonDriver* floorButtons[FLOOR_COUNT];
     ISwitchDriver* floorSwitches[FLOOR_COUNT];
+    ISwitchDriver* doorSwitchUp;
+    ISwitchDriver* doorSwitchDown;
     IButtonDriver* resetButton;
+    IButtonDriver* doorUpButton;
+    IButtonDriver* doorDownButton;
     IButtonDriver* callButton;
     IBinaryMotorDriver* motor;
     IBinaryMotorDriver* doorMotor;
@@ -44,6 +48,8 @@ public:
     void resetLift();
     void openDoors();
     void closeDoors();
+    void manualOpenDoor();
+    void manualCloseDoor();
     void setState(ElevatorState* newState);
     void setDoorStatus(DoorStatus status);
     void setCurrentFloor(int floor);
@@ -58,6 +64,8 @@ public:
     void setPendingFloor(int floor) { pendingFloor = floor; }
     int getPendingFloor() const { return pendingFloor; }
     ISwitchDriver* getFloorSwitch(int floor) { return floorSwitches[floor]; }
+    bool isDoorFullyOpen() { return doorSwitchUp->isTriggered(); }
+    bool isDoorFullyClosed() { return doorSwitchDown->isTriggered(); }
     int getCurrentFloor() const { return currentFloor; }
     bool areDoorsOpen() const { return doorsOpen; }
     bool areDoorsInMotion() const { return doorsInMotion; }
