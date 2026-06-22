@@ -246,8 +246,28 @@ void LiftController::robotReady()
     }
 }
 
-bool LiftController::isWaitingForRobotHere() const
+bool LiftController::isWaitingForRobotHere()
 {
     // Holding only makes sense once the lift has arrived with its doors open
-    return doorsOpen && robotWaitFloors[currentFloor];
+    bool waiting = doorsOpen && robotWaitFloors[currentFloor];
+    if (!waiting)
+    {
+        robotWaitStart = 0;
+        return false;
+    }
+
+    // Arm the timeout clock on the first tick we start holding here
+    if (robotWaitStart == 0) robotWaitStart = millis();
+
+    // Failsafe: stop waiting after ROBOT_WAIT_TIMEOUT_MS even without a
+    // RobotReady signal, so the lift never hangs indefinitely.
+    if (millis() - robotWaitStart >= ROBOT_WAIT_TIMEOUT_MS)
+    {
+        Serial.println("[Robot] No RobotReady within 45s - failsafe release");
+        robotWaitFloors[currentFloor] = false;
+        robotWaitStart = 0;
+        return false;
+    }
+
+    return true;
 }

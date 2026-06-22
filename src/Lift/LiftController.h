@@ -24,6 +24,8 @@ private:
     bool doorsInMotion = false;
     bool isMoving = false;
     volatile bool robotWaitFloors[FLOOR_COUNT] = {};
+    unsigned long robotWaitStart = 0;
+    static constexpr unsigned long ROBOT_WAIT_TIMEOUT_MS = 45000;
     ElevatorState* currentState = nullptr;
     LiftCommandScheduler* scheduler;
 
@@ -75,5 +77,5 @@ public:
     // queue); on arrival there the lift holds until the robot signals 'ready'.
     void registerRobotWait(int floor);
     void robotReady();
-    bool isWaitingForRobotHere() const;
+    bool isWaitingForRobotHere();
 };
