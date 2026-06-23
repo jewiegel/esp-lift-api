@@ -68,6 +68,35 @@ void WebSocketHandler::onEvent(AsyncWebSocket *server, AsyncWebSocketClient *cli
             return;
         }
 
+        // RobotReady releases the lift that is holding at the robot's floor.
+        // Must bypass the queue, which is currently blocked on that arrival.
+        if (command->getName() == "RobotReady")
+        {
+            CommandRegistry::notifyRobotReady();
+            delete command;
+            return;
+        }
+
+        // A request with waitForRobot registers a robot wait for that floor right
+        // away (independent of where it sits in the queue), so any arrival there
+        // holds until the robot is ready.
+        if (command->getName() == "RequestLift")
+        {
+            const RequestLiftCommand& liftCommand = static_cast<const RequestLiftCommand&>(*command);
+            if (liftCommand.getWaitForRobot())
+            {
+                CommandRegistry::registerRobotWait(liftCommand.getCurrentFloor());
+            }
+        }
+        else if (command->getName() == "ChooseLiftFloor")
+        {
+            const ChooseLiftFloorCommand& floorCommand = static_cast<const ChooseLiftFloorCommand&>(*command);
+            if (floorCommand.getWaitForRobot())
+            {
+                CommandRegistry::registerRobotWait(floorCommand.getFloor());
+            }
+        }
+
         scheduler->enqueue(command);
     }
 }

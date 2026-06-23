@@ -1,7 +1,9 @@
 #include "MovingState.h"
 #include "../../LiftStates/Doors/OpenDoorsState.h"
+#include "IdleState.h"
 
-MovingState::MovingState(LiftController* controller, int targetFloor) : controller(controller), targetFloor(targetFloor), currentStepFloor(0)
+MovingState::MovingState(LiftController* controller, int targetFloor, bool openDoorsOnArrival)
+    : controller(controller), targetFloor(targetFloor), currentStepFloor(0), openDoorsOnArrival(openDoorsOnArrival)
 {
 }
 
@@ -14,10 +16,15 @@ void MovingState::onEnter()
     controller->setIsMoving(true);
     Serial.println("[State] Moving to floor: " + String(targetFloor));
     controller->setDoorStatus(DoorStatus::Closed);
+
+    // Start the physical lift motor in the right direction
+    if (direction > 0) controller->motorUp();
+    else               controller->motorDown();
 }
 
 void MovingState::onExit()
 {
+    controller->stopMotor();
     controller->setIsMoving(false);
     Serial.println("Exiting Moving state");
 }
@@ -29,12 +36,15 @@ ElevatorState* MovingState::update()
     if (triggered && !lastSwitchState) 
     {
         currentStepFloor = nextFloor;
-        controller->turnOnFloorLed(currentStepFloor);
+        controller->setCurrentFloor(currentStepFloor);
         Serial.println("[State] Arrived at floor: " + String(currentStepFloor));
 
-        if (currentStepFloor == targetFloor) 
+        if (currentStepFloor == targetFloor)
         {
-            return new OpenDoorsState(controller, false);
+            controller->stopMotor();
+            if (openDoorsOnArrival)
+                return new OpenDoorsState(controller, false);
+            return new IdleState(controller);
         }
 
         int direction = (targetFloor > currentStepFloor) ? 1 : -1;

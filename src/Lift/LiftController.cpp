@@ -6,6 +6,7 @@
 #include "../WebSocketApi/LiftCommandScheduler.h"
 #include "../WebSocketApi/Commands/ChooseLiftFloorCommand.h"
 #include "../WebSocketApi/Commands/RequestLiftCommand.h"
+#include "../WebSocketApi/Commands/ResetLiftCommand.h"
 
 LiftController::LiftController(LiftCommandScheduler* scheduler) : scheduler(scheduler)
 {
@@ -14,51 +15,62 @@ LiftController::LiftController(LiftCommandScheduler* scheduler) : scheduler(sche
 LiftController::~LiftController()
 {
     delete currentState;
-    for (int i = 0; i < FLOOR_COUNT; i++) 
+    for (int i = 0; i < FLOOR_COUNT; i++)
     {
-        delete floorLeds[i];
         delete floorButtons[i];
     }
-    for (int i = 0; i < 3; i++) delete doorStatusLeds[i];
+    delete doorSwitchUp;
+    delete doorSwitchDown;
     delete callButton;
+    delete resetButton;
+    delete doorUpButton;
+    delete doorDownButton;
+    delete motor;
+    delete doorMotor;
 }
 
 void LiftController::setup()
 {
-    // Initialize floor LEDs
-    floorLeds[0] = new LedDriver(PIN_FLOOR_LED_0);
-    floorLeds[1] = new LedDriver(PIN_FLOOR_LED_1);
-    floorLeds[2] = new LedDriver(PIN_FLOOR_LED_2);
-    floorLeds[3] = new LedDriver(PIN_FLOOR_LED_3);
-
-    // Initialize door status LEDs
-    doorStatusLeds[0] = new LedDriver(PIN_DOOR_LED_OPEN);
-    doorStatusLeds[1] = new LedDriver(PIN_DOOR_LED_CLOSED);
-    doorStatusLeds[2] = new LedDriver(PIN_DOOR_LED_MOVING);
-
     // Initialize floor buttons
     floorButtons[0] = new ButtonDriver(PIN_FLOOR_BTN_0);
     floorButtons[1] = new ButtonDriver(PIN_FLOOR_BTN_1);
     floorButtons[2] = new ButtonDriver(PIN_FLOOR_BTN_2);
-    floorButtons[3] = new ButtonDriver(PIN_FLOOR_BTN_3);
 
     // Initialize floor switches
     floorSwitches[0] = new SwitchDriver(PIN_FLOOR_SWITCH_0);
     floorSwitches[1] = new SwitchDriver(PIN_FLOOR_SWITCH_1);
     floorSwitches[2] = new SwitchDriver(PIN_FLOOR_SWITCH_2);
-    floorSwitches[3] = new SwitchDriver(PIN_FLOOR_SWITCH_3);
+
+    // Initialize door end-stop switches
+    doorSwitchUp = new SwitchDriver(PIN_DOOR_SWITCH_UP);
+    doorSwitchDown = new SwitchDriver(PIN_DOOR_SWITCH_DOWN);
 
     for (int i = 0; i < FLOOR_COUNT; i++)
     {
-        floorButtons[i]->onPress([this, i]() { scheduler->enqueue(new ChooseLiftFloorCommand(i)); });
+        floorButtons[i]->onPress([this, i]() { scheduler->enqueue(new ChooseLiftFloorCommand(i, false)); });
     }
 
     // Initialize call button
     callButton = new ButtonDriver(PIN_CALL_BTN);
-    callButton->onPress([this]() { scheduler->enqueue(new RequestLiftCommand(currentFloor)); });
+    callButton->onPress([this]() { scheduler->enqueue(new RequestLiftCommand(currentFloor, false)); });
 
-    // Turn on floor 0 LED and enter initial idle state
-    floorLeds[currentFloor]->on();
+    // Initialize reset button: send the lift home (floor 0) with doors closed
+    resetButton = new ButtonDriver(PIN_RESET_BTN);
+    resetButton->onPress([this]() { scheduler->enqueue(new ResetLiftCommand()); });
+
+    // Initialize manual door buttons
+    doorUpButton = new ButtonDriver(PIN_DOOR_BTN_UP);
+    doorUpButton->onPress([this]() { manualOpenDoor(); });
+    doorDownButton = new ButtonDriver(PIN_DOOR_BTN_DOWN);
+    doorDownButton->onPress([this]() { manualCloseDoor(); });
+
+    // Initialize lift motor
+    motor = new LiftMotorDriver(MOVING_LIFT_UP, MOVING_LIFT_DOWN);
+
+    // Initialize door motor
+    doorMotor = new DoorMotor(MOVING_DOOR_UP, MOVING_DOOR_DOWN);
+
+    // Enter initial idle state
     setState(new IdleState(this));
 }
 
@@ -66,9 +78,14 @@ void LiftController::update()
 {
     for (int i = 0; i < FLOOR_COUNT; i++) floorButtons[i]->update();
     for (int i = 0; i < FLOOR_COUNT; i++) floorSwitches[i]->update();
+    doorSwitchUp->update();
+    doorSwitchDown->update();
     callButton->update();
+    resetButton->update();
+    doorUpButton->update();
+    doorDownButton->update();
 
-    if (currentState) 
+    if (currentState)
     {
         ElevatorState* next = currentState->update();
         if (next) setState(next);
@@ -111,6 +128,29 @@ void LiftController::moveToFloor(int floor)
         setState(new MovingState(this, floor));
 }
 
+void LiftController::resetLift()
+{
+    if (isMoving || doorsInMotion) return;
+
+    pendingFloor = 0;
+
+    if (doorsOpen)
+    {
+        // Close the doors first; CloseDoorsState then moves to floor 0 without reopening
+        setState(new CloseDoorsState(this, false));
+    }
+    else if (currentFloor != 0)
+    {
+        // Doors already closed: move straight to floor 0 and keep them closed on arrival
+        setState(new MovingState(this, 0, false));
+    }
+    else
+    {
+        // Already home with doors closed
+        setState(new IdleState(this));
+    }
+}
+
 void LiftController::openDoors()
 {
     setState(new OpenDoorsState(this));
@@ -118,6 +158,20 @@ void LiftController::openDoors()
 
 void LiftController::closeDoors()
 {
+    setState(new CloseDoorsState(this));
+}
+
+void LiftController::manualOpenDoor()
+{
+    // Only when the lift is standing still and the doors aren't already moving/open
+    if (isMoving || doorsInMotion || doorsOpen) return;
+    setState(new OpenDoorsState(this, false));  // stay open until closed manually
+}
+
+void LiftController::manualCloseDoor()
+{
+    // Only when the lift is standing still and the doors are actually open
+    if (isMoving || doorsInMotion || !doorsOpen) return;
     setState(new CloseDoorsState(this));
 }
 
@@ -135,23 +189,85 @@ void LiftController::setState(ElevatorState* newState)
 void LiftController::setDoorStatus(DoorStatus status)
 {
     doorsOpen = (status == DoorStatus::Open);
-    doorStatusLeds[0]->off();
-    doorStatusLeds[1]->off();
-    doorStatusLeds[2]->off();
-    switch (status) 
+}
+
+void LiftController::setCurrentFloor(int floor)
+{
+    if (floor >= 0 && floor < FLOOR_COUNT)
     {
-        case DoorStatus::Open:   doorStatusLeds[0]->on(); break;
-        case DoorStatus::Closed: doorStatusLeds[1]->on(); break;
-        case DoorStatus::Moving: doorStatusLeds[2]->on(); break;
+        currentFloor = floor;
     }
 }
 
-void LiftController::turnOnFloorLed(int floor)
+void LiftController::motorUp()
 {
-    for (int i = 0; i < FLOOR_COUNT; i++) floorLeds[i]->off();
-    if (floor >= 0 && floor < FLOOR_COUNT) 
+    motor->goUp();
+}
+
+void LiftController::motorDown()
+{
+    motor->goDown();
+}
+
+void LiftController::stopMotor()
+{
+    motor->stop();
+}
+
+void LiftController::openDoor()
+{
+    doorMotor->goUp();
+}
+
+void LiftController::closeDoor()
+{
+    doorMotor->goDown();
+}
+
+void LiftController::stopDoor()
+{
+    doorMotor->stop();
+}
+
+void LiftController::registerRobotWait(int floor)
+{
+    if (floor >= 0 && floor < FLOOR_COUNT)
     {
-        floorLeds[floor]->on();
-        currentFloor = floor;
+        robotWaitFloors[floor] = true;
     }
+}
+
+void LiftController::robotReady()
+{
+    // Clear the wait for the floor the lift is currently at
+    if (currentFloor >= 0 && currentFloor < FLOOR_COUNT)
+    {
+        robotWaitFloors[currentFloor] = false;
+    }
+}
+
+bool LiftController::isWaitingForRobotHere()
+{
+    // Holding only makes sense once the lift has arrived with its doors open
+    bool waiting = doorsOpen && robotWaitFloors[currentFloor];
+    if (!waiting)
+    {
+        robotWaitStart = 0;
+        return false;
+    }
+
+    // Arm the timeout clock on the first tick we start holding here
+    if (robotWaitStart == 0) robotWaitStart = millis();
+
+    // Failsafe: stop waiting after ROBOT_WAIT_TIMEOUT_MS even without a
+    // RobotReady signal, so the lift never hangs indefinitely.
+    if (millis() - robotWaitStart >= ROBOT_WAIT_TIMEOUT_MS)
+    {
+        Serial.println("[Robot] No RobotReady within 45s - failsafe release");
+        robotWaitFloors[currentFloor] = false;
+        robotWaitStart = 0;
+        return false;
+    }
+
+    return true;
 }

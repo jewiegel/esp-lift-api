@@ -4,6 +4,8 @@
 #include "RequestLiftCommand.h"
 #include "ChooseLiftFloorCommand.h"
 #include "StatusCommand.h"
+#include "ResetLiftCommand.h"
+#include "RobotReadyCommand.h"
 
 #include <map>
 #include <ArduinoJson.h>

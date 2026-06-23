@@ -1,22 +1,20 @@
 #pragma once
 
 #include "ILiftCommandHandler.h"
-#include "ChooseLiftFloorCommand.h"
+#include "ResetLiftCommand.h"
 #include "Lift/LiftController.h"
 
 class WebSocketHandler;
 
-class ChooseLiftFloorCommandHandler : public ILiftCommandHandler
+class ResetLiftCommandHandler : public ILiftCommandHandler
 {
 private:
     LiftController* controller;
     WebSocketHandler* wsHandler;
     std::function<void()> onCompleted;
-    int targetFloor = -1;
-    bool arrivedAnnounced = false;
 public:
-    ChooseLiftFloorCommandHandler(LiftController* controller, WebSocketHandler* wsHandler);
-    ~ChooseLiftFloorCommandHandler();
+    ResetLiftCommandHandler(LiftController* controller, WebSocketHandler* wsHandler);
+    ~ResetLiftCommandHandler();
 
     void execute(const ICommand& command, std::function<void()> onCompleted) override;
     void update() override;
